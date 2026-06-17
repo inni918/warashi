@@ -1,0 +1,93 @@
+@echo off
+REM ===========================================================================
+REM Open-LLM-VTuber Companion - Windows launcher (double-clickable)
+REM ---------------------------------------------------------------------------
+REM Double-click this file to start your companion.
+REM
+REM What it does:
+REM   1. Makes sure `uv` (the Python package manager) is installed.
+REM   2. Installs/updates dependencies with `uv sync`.
+REM   3. Opens your browser to the app.
+REM   4. Starts the server (run_server.py).
+REM This is also your DAILY launcher - just run it every time.
+REM ===========================================================================
+
+setlocal enableextensions
+title Open-LLM-VTuber Companion
+
+REM Always run from the folder this script lives in (the project root).
+cd /d "%~dp0"
+
+set "APP_URL=http://localhost:12393"
+
+echo ============================================================
+echo   Open-LLM-VTuber Companion - starting up
+echo ============================================================
+echo.
+
+REM --- 1. Ensure uv is installed -------------------------------------------
+where uv >nul 2>&1
+if %ERRORLEVEL%==0 goto have_uv
+
+REM uv might be installed at the default per-user location but not on PATH.
+if exist "%USERPROFILE%\.local\bin\uv.exe" (
+  set "PATH=%USERPROFILE%\.local\bin;%PATH%"
+)
+where uv >nul 2>&1
+if %ERRORLEVEL%==0 goto have_uv
+
+echo   'uv' is not installed. Installing it now (one-time)...
+echo   (uv is a fast Python package manager from Astral.)
+echo.
+powershell -ExecutionPolicy ByPass -NoProfile -Command "irm https://astral.sh/uv/install.ps1 | iex"
+set "PATH=%USERPROFILE%\.local\bin;%PATH%"
+
+where uv >nul 2>&1
+if %ERRORLEVEL%==0 goto have_uv
+
+echo.
+echo   ERROR: uv still isn't available after install.
+echo   Close this window, open a new Command Prompt, and run this file again.
+echo   Or install manually: https://docs.astral.sh/uv/getting-started/installation/
+echo.
+pause
+exit /b 1
+
+:have_uv
+for /f "delims=" %%i in ('where uv') do set "UV_PATH=%%i"
+echo   uv found: %UV_PATH%
+echo.
+
+REM --- 2. Install / update dependencies ------------------------------------
+echo   Installing dependencies (uv sync) - first run can take a few minutes...
+call uv sync
+if %ERRORLEVEL% neq 0 (
+  echo.
+  echo   ERROR: 'uv sync' failed. Scroll up for details.
+  echo.
+  pause
+  exit /b 1
+)
+echo   Dependencies ready.
+echo.
+
+REM --- 3. Open the browser (delayed so the server can bind) ----------------
+echo   Opening %APP_URL% in your browser...
+start "" /min cmd /c "timeout /t 4 /nobreak >nul & start """" ""%APP_URL%"""
+
+REM --- 4. Start the server -------------------------------------------------
+echo ============================================================
+echo   Server starting. Leave THIS WINDOW OPEN while you chat.
+echo   First launch: a small speech model downloads automatically.
+echo.
+echo   On first run a setup wizard appears in the browser - paste an
+echo   API key (OpenAI / Claude / Gemini) OR pick a local Ollama model.
+echo.
+echo   To quit: close this window (or press Control-C).
+echo ============================================================
+echo.
+call uv run run_server.py
+
+echo.
+echo   Server stopped.
+pause

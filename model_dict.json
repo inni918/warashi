@@ -1,0 +1,69 @@
+[
+  {
+    "name": "mao_pro",
+    "description": "",
+    "url": "/live2d-models/mao_pro/runtime/mao_pro.model3.json",
+    "kScale": 0.5,
+    "initialXshift": 0,
+    "initialYshift": 0,
+    "kXOffset": 1150,
+    "idleMotionGroupName": "Idle",
+    "emotionMap": {
+      "neutral": 0,
+      "anger": 2,
+      "disgust": 2,
+      "fear": 1,
+      "joy": 3,
+      "smirk": 3,
+      "sadness": 1,
+      "surprise": 3
+    },
+    "tapMotions": {
+      "HitAreaHead": {
+        "": 1
+      },
+      "HitAreaBody": {
+        "": 1
+      }
+    }
+  },
+  {
+    "name": "haru",
+    "description": "自動偵測並註冊的 Live2D 模型",
+    "url": "/live2d-models/haru/Haru.model3.json",
+    "kScale": 0.5,
+    "initialXshift": 0,
+    "initialYshift": 0,
+    "idleMotionGroupName": "Idle",
+    "emotionMap": {
+      "neutral": 0
+    },
+    "tapMotions": {}
+  },
+  {
+    "name": "hiyori",
+    "description": "自動偵測並註冊的 Live2D 模型",
+    "url": "/live2d-models/hiyori/Hiyori.model3.json",
+    "kScale": 0.5,
+    "initialXshift": 0,
+    "initialYshift": 0,
+    "idleMotionGroupName": "Idle",
+    "emotionMap": {
+      "neutral": 0
+    },
+    "tapMotions": {}
+  },
+  {
+    "name": "natori",
+    "description": "自動偵測並註冊的 Live2D 模型",
+    "url": "/live2d-models/natori/Natori.model3.json",
+    "kScale": 0.5,
+    "initialXshift": 0,
+    "initialYshift": 0,
+    "idleMotionGroupName": "Idle",
+    "emotionMap": {
+      "neutral": 0
+    },
+    "tapMotions": {}
+  }
+]

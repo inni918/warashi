@@ -1,0 +1,53 @@
+NOTICE
+======
+
+This project is built on top of **Open-LLM-VTuber**
+(https://github.com/Open-LLM-VTuber/Open-LLM-VTuber), licensed under the MIT
+License, Copyright (c) 2025 Yi-Ting Chiu. The original MIT license text is kept
+in LICENSE; the upstream README is preserved as README.upstream.md.
+
+What this fork adds (MIT)
+-------------------------
+- Long-term memory: core-memory injection + post-turn consolidation + per-turn
+  refresh — src/open_llm_vtuber/memory_core.py, MEMORY_SYSTEM_DESIGN.md, and
+  hooks in service_context.py / conversations/single_conversation.py
+- Proactive conversation from the latest news — scripts/news_topics.py + the
+  proactive-speak prompt
+- Natural barge-in, VAD tuning, proactive-speak toggle, and sleep / "quiet mode"
+  (stop initiating between "goodnight" and the next message) —
+  frontend/index.html, src/open_llm_vtuber/quiet_mode.py + hooks
+
+Third-party components (configure your own; see each project's license)
+----------------------------------------------------------------------
+- Open-LLM-VTuber-Web frontend (compiled web bundle included in frontend/) —
+  Open-LLM-VTuber License 1.0 = Apache License 2.0 + additional conditions
+  (non-commercial use, incl. free redistribution, is permitted; commercial
+  rebranding, paid hosting/SaaS, or embedding in a paid product requires a
+  separate commercial license from the Open-LLM-VTuber org). This fork is free
+  and non-commercial, which the license permits.
+- Live2D Cubism Core (frontend/libs/live2dcubismcore.min.js) — (C) Live2D Inc.
+  Distributed as "Redistributable Code" under the Live2D Proprietary Software
+  License Agreement (https://www.live2d.com/eula/live2d-proprietary-software-license-agreement_en.html).
+- Live2D sample models (mao_pro, haru, hiyori, natori) — Live2D
+  sample data from the official Cubism Web Samples
+  (https://github.com/Live2D/CubismWebSamples), used under the Live2D Free
+  Material License (see LICENSE-Live2D.md). Required attribution:
+  "This content uses sample data owned and copyrighted by Live2D Inc."
+  Bundled unmodified as a free default; replace for any paid/commercial build.
+- GPT-SoVITS (optional local TTS) — MIT (RVC-Boss/GPT-SoVITS). NOTE: cloning a
+  real person's voice can raise likeness/consent issues regardless of the code
+  license — that is the user's responsibility.
+- sherpa-onnx (ASR engine) — Apache-2.0 (k2-fsa). The SenseVoice model has its
+  own model license — verify before commercial use, or switch to Whisper (MIT).
+- Silero VAD — MIT
+- edge-tts (default TTS) — uses Microsoft Edge's online TTS service
+- DeepLX (optional translation) — unofficial DeepL endpoint; for production or
+  commercial use, switch to the official DeepL API.
+
+Not included — bring your own
+-----------------------------
+- Any specific character's Live2D model, voice, persona, or artwork (especially
+  copyrighted anime characters). Do NOT add copyrighted character art, voices,
+  or trained voice models to a public copy. Bring your own.
+- LLM access — use your own API key (OpenAI / Claude / Gemini) or a local model
+  (Ollama). No subscription-proxy hacks.
