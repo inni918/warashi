@@ -146,7 +146,7 @@ character_config:
         temperature: 0.9 # 温度，介于 0 到 2 之间
         # 不活动后模型在内存中保留的时间（秒）
         # 设置为 -1 表示模型将永远保留在内存中（即使退出 open llm vtuber 之后也是）
-        keep_alive: 1800 # 閒置 1800 秒(30 分)後從 M4 Max 記憶體卸載，不長期占用工作機
+        keep_alive: 1800 # 閒置 1800 秒(30 分)後從記憶體卸載，不長期占用記憶體
         unload_at_exit: True # 退出时从内存中卸载模型
 
       lmstudio_llm:
