@@ -45,7 +45,9 @@ It is a **friendly re-packaging** of the excellent [Open-LLM-VTuber](https://git
 
 ## Screenshots
 
-_(Screenshots coming soon.)_
+![Warashi — your Live2D AI companion in action](assets/warashi-hero.png)
+
+*Warashi running on the desktop: a Live2D avatar you actually talk to.*
 
 ---
 
@@ -53,21 +55,35 @@ _(Screenshots coming soon.)_
 
 The easy path — **no terminal needed.**
 
-1. **Download** the project ZIP and **unzip** it somewhere (e.g. your Desktop).
+> **Before you start: you'll need an AI "brain" (LLM).**
+> Warashi is the **body and face** — the avatar, the voice, the memory. The **brain** that actually thinks and talks is a separate AI that *you* provide. You pick one of two ways, and you can set it up during the setup wizard (no need to decide everything right now):
+> - **(A) Use a paid cloud AI** — get an API key from [OpenAI](https://platform.openai.com/api-keys), Claude, or Gemini and paste it in. With a small model this typically costs only **pennies per chat**.
+> - **(B) Run a free local AI** — install the free **[Ollama](https://ollama.com)** app and it runs a brain right on your own computer. **No cost**, but it needs a reasonably capable computer.
+>
+> You don't need to download anything yet — just know which way you're leaning before you wait through the install below.
+
+1. **Download from GitHub.** On the GitHub page, click the green **`<> Code`** button, then **Download ZIP**, and unzip it (e.g. to your Desktop). This is the normal way to get Warashi.
 2. **Double-click the launcher** inside the unzipped folder:
    - **macOS:** `start-companion.command`
    - **Windows:** `start-companion.bat`
-   - The first launch installs everything (`uv`, then dependencies) and can take a few minutes. **Leave the window open — it's the server.**
+   - The first launch installs everything (`uv`, then dependencies) and can take a few minutes. **Leave that window open — it's the server.**
 3. Your browser opens to **http://localhost:12393**. On first run a **setup wizard** appears: either **paste an API key** (OpenAI / Claude / Gemini) **or** **pick a local Ollama model**. The wizard tests your choice before saving.
-4. **After the wizard saves, close the launcher window and double-click it again** to restart with your new LLM — then start chatting. Click once on the page to enable audio.
+
+   ![Warashi first-run setup wizard](assets/warashi-setup.png)
+
+   *The first-run setup wizard, where you plug in your AI "brain".*
+
+4. **Restart so your new brain kicks in.** Quit by **closing that same launcher/terminal window from step 2** (that stops the server), then **double-click the launcher again** to start it back up with your new LLM. (The app also notes that an LLM change "takes effect after a restart — or after switching the character once.") Then start chatting; click once on the page to enable audio.
 
 > **macOS Gatekeeper (first launch only):** double-clicking may show *"can't be opened because it is from an unidentified developer."* This is normal for an unsigned open-source app. **Right-click** `start-companion.command` → **Open** → **Open** in the dialog. After you allow it once, double-clicking works from then on. (We don't ship a signed/notarized build — this is the free tier.)
 
+> **Windows SmartScreen (first launch only):** double-clicking may show a blue **"Windows protected your PC"** box. This is normal for an unsigned open-source app. Click **More info** → **Run anyway**. After you allow it once, it won't ask again.
+
 Out of the box it uses the bundled **mao** sample Live2D model and **edge-tts** (free cloud voice, no GPU needed). The first run also downloads a small speech-to-text model automatically.
 
-### Prefer the terminal?
+### Prefer the terminal? (advanced)
 
-Requires **Python ≥ 3.10, < 3.13** and [`uv`](https://github.com/astral-sh/uv).
+Most people should use the **Download ZIP** path above. If you're comfortable with a terminal, you can clone the repo instead. Requires **Python ≥ 3.10, < 3.13** and [`uv`](https://github.com/astral-sh/uv).
 
 ```bash
 git clone https://github.com/inni918/warashi.git && cd warashi
@@ -115,6 +131,9 @@ On by default. Each character keeps its own memory at `chat_history/<conf_uid>/c
 
 ### Characters
 Create / edit / switch / delete characters in the app — each has its own name, persona, Live2D skin, voice, and **separate memory**. To add your own Live2D model, drop it under `live2d-models/<name>/`, add an entry in `model_dict.json`, and select it. **Do not commit copyrighted character models to a public repo.**
+
+#### More characters (optional)
+For licensing safety, Warashi bundles only **3 free Live2D Original Characters** (`mao_pro`, `haru`, `hiyori`). Want more — including the male butler character **Natori**? You can download free official Live2D sample models yourself from the official page and drop them in. Get them from **[Live2D's sample models page](https://www.live2d.com/en/learn/sample/)** under Live2D's own license — we don't redistribute them. See [`docs/add-live2d-character.md`](docs/add-live2d-character.md) for the how-to.
 
 ### Performance presets
 **Light / Standard / High-performance** presets bundle the ASR/TTS engine choice, memory-consolidation frequency, and model keep-alive. Pick Light on a modest machine, High-performance if you have the hardware.
@@ -217,27 +236,43 @@ Issues and pull requests are welcome.
 
 ## 截圖
 
-_(截圖即將補上。)_
+![Warashi — 你的 Live2D AI 陪伴實際運作畫面](assets/warashi-hero.png)
+
+*Warashi 在桌面上運作：一個你真的會去聊天的 Live2D 角色。*
 
 ## 快速開始（下載 → 雙擊 → 開聊）
 
 最簡單的路徑，**完全不用終端機。**
 
-1. **下載**專案 ZIP 並**解壓縮**到任意位置（例如桌面）。
+> **開始前先準備好：你需要一顆 AI「大腦」（LLM）。**
+> Warashi 是**身體和臉** — 角色外型、聲音、記憶都有了。但真正會思考、會講話的**大腦**，是一個另外的 AI，要由**你**來提供。你二選一就好，而且可以在設定精靈裡再設定（現在不用全部決定）：
+> - **（A）用付費的雲端 AI** — 去 [OpenAI](https://platform.openai.com/api-keys)、Claude 或 Gemini 拿一把 API key 貼進去。用小模型的話，通常**一次聊天只要幾分錢**。
+> - **（B）跑免費的本地 AI** — 安裝免費的 **[Ollama](https://ollama.com)** app，它就在你自己的電腦上跑一顆大腦。**完全免費**，但需要一台還算夠力的電腦。
+>
+> 現在還不用先下載什麼，只要在等下面安裝跑完之前，心裡有個方向就好。
+
+1. **從 GitHub 下載。** 在 GitHub 頁面上，點綠色的 **`<> Code`** 按鈕，再選 **Download ZIP**，然後解壓縮（例如解到桌面）。這是取得 Warashi 的正常方式。
 2. **雙擊資料夾裡的啟動器**：
    - **macOS：** `start-companion.command`
    - **Windows：** `start-companion.bat`
-   - 第一次啟動會自動安裝所有東西（先 `uv`，再相依套件），可能要幾分鐘。**視窗別關，它就是伺服器本體。**
+   - 第一次啟動會自動安裝所有東西（先 `uv`，再相依套件），可能要幾分鐘。**那個視窗別關，它就是伺服器本體。**
 3. 瀏覽器會自動開到 **http://localhost:12393**。第一次會出現**設定精靈**：**貼上 API key**（OpenAI／Claude／Gemini），**或**選一個本地 **Ollama 模型**。精靈會先測試再存檔。
-4. **精靈存檔後，關掉啟動器視窗再雙擊一次**，讓新的 LLM 生效，就可以開始聊天了。點一下頁面以解鎖音訊。
+
+   ![Warashi 首次啟動設定精靈](assets/warashi-setup.png)
+
+   *首次啟動的設定精靈，在這裡接上你的 AI「大腦」。*
+
+4. **重啟一次，新的大腦才會接上。** 請**把步驟 2 那個啟動器／終端機視窗關掉**結束它（這會停掉伺服器），再**重新雙擊一次啟動器**，讓新的 LLM 接上。（app 裡也會提示，LLM 的變更「會在重啟之後生效 — 或切換一次角色之後生效」。）接著就能開始聊天；點一下頁面以解鎖音訊。
 
 > **macOS Gatekeeper（僅第一次）：** 雙擊時可能跳出「**無法打開，因為來自未識別的開發者**」。這對未簽章的開源 app 是正常的。請對 `start-companion.command` **按右鍵 → 打開 → 打開**。允許一次之後，往後就能直接雙擊了。（我們不提供簽章／公證版本 — 這是免費版。）
 
+> **Windows SmartScreen（僅第一次）：** 雙擊時可能跳出藍色的「**Windows 已保護您的電腦**」視窗。這對未簽章的開源 app 是正常的。請點 **其他資訊** → **仍要執行**。允許一次之後就不會再問了。
+
 開箱使用內建的 **mao** 範例 Live2D 模型與 **edge-tts**（免費雲端語音，不需顯卡）。第一次啟動也會自動下載一個小型語音辨識模型。
 
-### 習慣用終端機？
+### 習慣用終端機？（進階）
 
-需要 **Python ≥ 3.10、< 3.13** 與 [`uv`](https://github.com/astral-sh/uv)。
+大多數人用上面的 **Download ZIP** 路徑就好。如果你熟悉終端機，也可以改用 clone 取得專案。需要 **Python ≥ 3.10、< 3.13** 與 [`uv`](https://github.com/astral-sh/uv)。
 
 ```bash
 git clone https://github.com/inni918/warashi.git && cd warashi
@@ -265,6 +300,7 @@ uv run run_server.py     # 啟動伺服器
 
 - **記憶（核心＋深度回想）**：預設開啟，每個角色記憶獨立存在 `chat_history/<conf_uid>/core_memory.md`，每輪由 LLM 決定要存什麼；可選開啟 **FTS5 深度回想**搜尋全歷史。記憶上限可在設定調整。
 - **角色**：在 app 內建立／編輯／切換／刪除，每個角色有獨立的名稱、人設、Live2D 皮、語音與記憶。要加自己的模型，放到 `live2d-models/<name>/` 並在 `model_dict.json` 加一筆。**不要把有版權的角色模型 commit 進公開 repo。**
+  - **想要更多角色（選用）**：為了授權安全，Warashi 只內建 **3 個免費的 Live2D 原創角色**（`mao_pro`、`haru`、`hiyori`）。想要更多 — 包含男管家角色 **Natori（名取）**？你可以自己到官方頁面下載免費的官方 Live2D 範例模型再放進來。請從 **[Live2D 範例模型頁面](https://www.live2d.com/en/learn/sample/)** 依 Live2D 自己的授權下載 — 我們不代為散布。作法見 [`docs/add-live2d-character.md`](docs/add-live2d-character.md)。
 - **效能預設**：輕量／標準／高效能，一鍵搭好引擎、整理頻率與模型常駐。
 - **主動話題與新聞**：可用 `scripts/news_topics.py`（純標準函式庫、不需 key）定時更新話題。
 - **睡眠／勿擾**：說「晚安」停止主動發話，下次對話恢復，關鍵字可改。
