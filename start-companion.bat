@@ -71,6 +71,13 @@ if %ERRORLEVEL% neq 0 (
 echo   Dependencies ready.
 echo.
 
+REM --- First run: create conf.yaml from the default template if it's missing -
+if not exist "conf.yaml" (
+  copy /Y "config_templates\conf.warashi.default.yaml" "conf.yaml" >nul
+  echo   Created conf.yaml from the default template.
+  echo.
+)
+
 REM --- 3. Open the browser (delayed so the server can bind) ----------------
 echo   Opening %APP_URL% in your browser...
 start "" /min cmd /c "timeout /t 4 /nobreak >nul & start """" ""%APP_URL%"""

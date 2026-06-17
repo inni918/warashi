@@ -62,7 +62,7 @@ The easy path — **no terminal needed.**
 >
 > You don't need to download anything yet — just know which way you're leaning before you wait through the install below.
 
-1. **Download from GitHub.** On the GitHub page, click the green **`<> Code`** button, then **Download ZIP**, and unzip it (e.g. to your Desktop). This is the normal way to get Warashi.
+1. **Download Warashi.** Go to the [**Releases page**](https://github.com/inni918/warashi/releases/latest) and download the latest `Warashi-*.zip`, then unzip it (e.g. to your Desktop). _(Alternatively, on the main repo page click the green **`<> Code`** button → **Download ZIP**.)_
 2. **Double-click the launcher** inside the unzipped folder:
    - **macOS:** `start-companion.command`
    - **Windows:** `start-companion.bat`
@@ -251,7 +251,7 @@ Issues and pull requests are welcome.
 >
 > 現在還不用先下載什麼，只要在等下面安裝跑完之前，心裡有個方向就好。
 
-1. **從 GitHub 下載。** 在 GitHub 頁面上，點綠色的 **`<> Code`** 按鈕，再選 **Download ZIP**，然後解壓縮（例如解到桌面）。這是取得 Warashi 的正常方式。
+1. **下載 Warashi。** 到 [**Releases 頁面**](https://github.com/inni918/warashi/releases/latest) 下載最新的 `Warashi-*.zip`，然後解壓縮（例如解到桌面）。_（或者在 repo 主頁點綠色 **`<> Code`** 按鈕 → **Download ZIP**。）_
 2. **雙擊資料夾裡的啟動器**：
    - **macOS：** `start-companion.command`
    - **Windows：** `start-companion.bat`

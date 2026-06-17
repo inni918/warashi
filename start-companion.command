@@ -19,6 +19,10 @@ set -e
 # Always run from the folder this script lives in (the project root).
 cd "$(dirname "$0")"
 
+# If anything below fails, show why and keep the window open so you can read it
+# (otherwise a double-clicked Terminal window just vanishes on error).
+trap 'echo; echo "  Something went wrong — see the messages above."; echo "  If it mentions the network, check your internet and run this again (it resumes where it left off)."; echo; read -r -p "  Press Return to close this window."; exit 1' ERR
+
 APP_URL="http://localhost:12393"
 
 echo "============================================================"
@@ -73,6 +77,13 @@ echo "  Installing dependencies (uv sync) — first run can take a few minutes..
 uv sync
 echo "  Dependencies ready."
 echo
+
+# --- First run: create conf.yaml from the default template if it's missing ---
+if [ ! -f conf.yaml ]; then
+  cp config_templates/conf.warashi.default.yaml conf.yaml
+  echo "  Created conf.yaml from the default template."
+  echo
+fi
 
 # --- 3. Open the browser (slightly delayed so the server can bind) -------
 echo "  Opening $APP_URL in your browser..."
