@@ -10,7 +10,6 @@ conf.yaml
 !/live2d-models/mao_pro
 !/live2d-models/haru
 !/live2d-models/hiyori
-!/live2d-models/natori
 
 # ignore non-default character configs
 /characters/*
@@ -83,3 +82,5 @@ mcp_servers.json
 conf.yaml.bak
 *.bak
 prompts/utils/proactive_topics.json
+prompts/utils/seen_news.json
+prompts/utils/proactive_speak_prompt.txt

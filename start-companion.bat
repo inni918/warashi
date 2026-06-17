@@ -1,6 +1,6 @@
 @echo off
 REM ===========================================================================
-REM Open-LLM-VTuber Companion - Windows launcher (double-clickable)
+REM Warashi - Windows launcher (double-clickable)
 REM ---------------------------------------------------------------------------
 REM Double-click this file to start your companion.
 REM
@@ -13,7 +13,7 @@ REM This is also your DAILY launcher - just run it every time.
 REM ===========================================================================
 
 setlocal enableextensions
-title Open-LLM-VTuber Companion
+title Warashi
 
 REM Always run from the folder this script lives in (the project root).
 cd /d "%~dp0"
@@ -21,7 +21,7 @@ cd /d "%~dp0"
 set "APP_URL=http://localhost:12393"
 
 echo ============================================================
-echo   Open-LLM-VTuber Companion - starting up
+echo   Warashi - starting up
 echo ============================================================
 echo.
 

@@ -13,8 +13,8 @@ A complete **Live2D model folder**. A valid model folder contains at least:
 - **motions** (the `.motion3.json` animation files, including an idle motion).
 
 The built-in `mao_pro` sample uses the nested layout
-`live2d-models/<name>/runtime/<name>.model3.json`; the others (`haru`, `hiyori`,
-`natori`) keep the `.model3.json` directly in the folder. Either shape works —
+`live2d-models/<name>/runtime/<name>.model3.json`; the others (`haru`, `hiyori`)
+keep the `.model3.json` directly in the folder. Either shape works —
 the scanner finds the `.model3.json` up to 3 levels deep.
 
 ## How Warashi finds your model (verified from the code)
@@ -74,6 +74,26 @@ In the Character Manager:
 registered model, it will refuse with a "drop it into live2d-models/ then rescan" message.
 That's expected; just make sure the folder is really there and contains a `.model3.json`.)
 
+## Give your character a skin-picker thumbnail (optional)
+
+The skin picker shows a thumbnail for each character. The built-in characters already ship
+with thumbnails; for a model you add yourself, just drop a preview image into its folder and
+the picker shows it automatically — no screenshotting, no configuration needed.
+
+How: name an image `thumbnail.png` and put it in your model folder (the same level as the
+`.model3.json`):
+
+```
+live2d-models/<your_character>/thumbnail.png
+```
+
+- Accepted filenames (detected in order): `thumbnail.png` / `.jpg` / `.jpeg` / `.webp`,
+  `preview.png`, `preview.jpg`, `icon.png`, or a `<foldername>.png` that matches the folder.
+- Many Live2D models already come with a preview image — just rename it and drop it in.
+- A portrait aspect ratio (e.g. 260×400) looks best; the image is auto-cropped and centered.
+- It's fine to skip this — the picker shows a "?" placeholder and everything still works.
+- After adding it, reopen the Character Manager (it rescans) to make it appear.
+
 ## FAQ / troubleshooting
 
 - **My folder doesn't appear in the dropdown.** It's almost always because the folder has
@@ -96,10 +116,10 @@ That's expected; just make sure the folder is really there and contains a `.mode
 
 - **Don't use copyrighted character models in public or commercial settings** without the
   rights to do so.
-- **Follow each model's own license.** The bundled samples are official Live2D sample
-  data and carry their own terms: e.g. **`shizuku`** must be used keeping its original name
-  and configuration; **`mao_pro`** is Live2D sample material. See `LICENSE-Live2D.md` and
-  `NOTICE` in the project for details.
+- **Follow each model's own license.** The bundled samples (`mao_pro`, `haru`, `hiyori`)
+  are Live2D Original Characters, used under the Live2D Free Material License. See
+  `LICENSE-Live2D.md` and `NOTICE` in the project for details. When you add your own
+  model, follow that model's own license.
 - Using your own commissioned or self-made model is the safe path.
 
 ---
@@ -117,8 +137,10 @@ That's expected; just make sure the folder is really there and contains a `.mode
 - **貼圖**（圖檔，通常是 `.../*.2048/texture_00.png` 那一組）、
 - **動作 motions**（`.motion3.json` 動畫檔，含一個 idle 待機動作）。
 
-兩個內建範例（`mao_pro`、`shizuku`）的結構是
-`live2d-models/<名稱>/runtime/<名稱>.model3.json`，照這個樣子擺最保險。
+內建的 `mao_pro` 範例採巢狀結構
+`live2d-models/<名稱>/runtime/<名稱>.model3.json`；其餘（`haru`、`hiyori`）則把
+`.model3.json` 直接放在資料夾裡。兩種擺法都可以——掃描器會在 3 層深度內找到
+`.model3.json`。
 
 ### Warashi 怎麼找到你的模型（已讀程式碼查證）
 
@@ -196,7 +218,7 @@ live2d-models/<你的角色>/thumbnail.png
 ### 授權提醒（務必看）
 
 - **不要在公開／商用情境使用有版權的角色模型**，除非你有使用權。
-- **遵守每個模型自己的授權。** 內建範例（`mao_pro`、`haru`、`hiyori`、`natori`）都是 Live2D
-  官方範例資料、各有使用條款（例如 `natori` 需維持其管家角色的定位）。詳見專案裡的
-  `LICENSE-Live2D.md` 與 `NOTICE`。
+- **遵守每個模型自己的授權。** 內建範例（`mao_pro`、`haru`、`hiyori`）都是 Live2D 原創角色，
+  依 Live2D 無償提供材料授權使用。詳見專案裡的 `LICENSE-Live2D.md` 與 `NOTICE`。當你加入自己的
+  模型時，請遵守那個模型自己的授權。
 - 用你自己委託製作或自製的模型是最安全的做法。

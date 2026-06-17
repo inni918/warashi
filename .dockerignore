@@ -13,7 +13,8 @@
 # Live2D models - ignore non-defaults
 live2d-models/*
 !live2d-models/mao_pro/**
-!live2d-models/shizuku/**
+!live2d-models/haru/**
+!live2d-models/hiyori/**
 
 # Characters
 characters/*

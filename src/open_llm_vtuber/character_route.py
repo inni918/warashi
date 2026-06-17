@@ -629,6 +629,19 @@ def _tailscale_serve_https_url(port: Optional[int]) -> Optional[str]:
     return None
 
 
+def _server_bound_localhost_only() -> bool:
+    """True if the server listens only on loopback (conf system_config.host is
+    localhost/127.0.0.1), so the LAN / Tailscale-IP URLs are NOT reachable from
+    other devices. The UI uses this to guide the user instead of showing dead
+    URLs. (Tailscale Serve still works in this mode — it proxies from loopback.)"""
+    try:
+        conf = read_yaml(CONF_PATH) or {}
+        host = str((conf.get("system_config") or {}).get("host", "")).strip()
+        return host in ("localhost", "127.0.0.1", "::1")
+    except Exception:
+        return False
+
+
 def _collect_network_urls(request: Request) -> dict:
     """Reachable URLs other devices can use to open this companion: the LAN URL
     (same Wi-Fi), the Tailscale URL (anywhere), and — if Tailscale Serve is
@@ -659,6 +672,9 @@ def _collect_network_urls(request: Request) -> dict:
         # The secure URL the microphone needs, auto-detected from Tailscale Serve
         # (null when Serve isn't proxying HTTPS to this port).
         "https_url": https_url,
+        # True when the server only listens on loopback — the LAN/Tailscale-IP
+        # URLs above won't connect, so the UI shows setup guidance instead.
+        "localhost_only": _server_bound_localhost_only(),
         # Microphone capture needs a secure context (HTTPS) on a remote host;
         # plain-IP http works for text but not the mic. Tailscale Serve = HTTPS.
         "mic_needs_https": scheme != "https",

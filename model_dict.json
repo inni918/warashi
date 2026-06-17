@@ -52,18 +52,5 @@
       "neutral": 0
     },
     "tapMotions": {}
-  },
-  {
-    "name": "natori",
-    "description": "自動偵測並註冊的 Live2D 模型",
-    "url": "/live2d-models/natori/Natori.model3.json",
-    "kScale": 0.5,
-    "initialXshift": 0,
-    "initialYshift": 0,
-    "idleMotionGroupName": "Idle",
-    "emotionMap": {
-      "neutral": 0
-    },
-    "tapMotions": {}
   }
 ]

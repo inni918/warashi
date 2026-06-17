@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ===========================================================================
-# Open-LLM-VTuber Companion — macOS launcher (double-clickable)
+# Warashi — macOS launcher (double-clickable)
 # ---------------------------------------------------------------------------
 # Double-click this file in Finder to start your companion.
 # The FIRST time, macOS Gatekeeper may block it: right-click the file ->
@@ -22,7 +22,7 @@ cd "$(dirname "$0")"
 APP_URL="http://localhost:12393"
 
 echo "============================================================"
-echo "  Open-LLM-VTuber Companion — starting up"
+echo "  Warashi — starting up"
 echo "============================================================"
 echo
 

@@ -146,7 +146,7 @@ This project would not exist without the upstream work it builds on. Please **st
 - **Upstream:** [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) — its server-side code is MIT, Copyright (c) 2025 Yi-Ting Chiu.
 - **This fork's additions** (memory, proactive topics, barge-in, quiet mode, character management, setup wizard, performance presets, bilingual UI) — MIT.
 - **Bundled web frontend** — the compiled web bundle in `frontend/` is the Open-LLM-VTuber-Web frontend, under the **Open-LLM-VTuber License 1.0** (Apache-2.0 + additional conditions). Free, non-commercial use and redistribution is permitted; commercial rebranding, paid hosting/SaaS, or embedding in a paid product needs a separate commercial license from the Open-LLM-VTuber org. This fork is free and non-commercial, which the license permits. See [`NOTICE`](./NOTICE).
-- **Live2D Cubism & bundled sample models** — the bundled **mao_pro** / **haru** / **hiyori** / **natori** models are Live2D Inc. sample data, used under the **Live2D Free Material License** (see [`LICENSE-Live2D.md`](./LICENSE-Live2D.md)). Required attribution:
+- **Live2D Cubism & bundled sample models** — the bundled **mao_pro** / **haru** / **hiyori** models are Live2D Inc. sample data, used under the **Live2D Free Material License** (see [`LICENSE-Live2D.md`](./LICENSE-Live2D.md)). Required attribution:
   > This content uses sample data owned and copyrighted by Live2D Inc.
 
   They are bundled **unmodified** as a free default. **For any paid/commercial build, replace them** with your own CC0 / licensed / commissioned model.
@@ -284,7 +284,7 @@ uv run run_server.py     # 啟動伺服器
 - **上游：** [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) — 其伺服器端程式碼為 MIT，Copyright (c) 2025 Yi-Ting Chiu。
 - **本 fork 新增的部分**（記憶、主動話題、插話、勿擾、角色管理、設定精靈、效能預設、雙語介面）— MIT。
 - **內建前端：** `frontend/` 裡的編譯後網頁是 Open-LLM-VTuber-Web 前端，採 **Open-LLM-VTuber License 1.0**（Apache-2.0 + 額外條款）。免費、非商業的使用與再散布是被允許的；商業改名、付費託管／SaaS、或內嵌進付費產品，則需向 Open-LLM-VTuber 團隊另取商業授權。本 fork 免費且非商業，符合該授權允許的範圍。見 [`NOTICE`](./NOTICE)。
-- **Live2D Cubism 與內建範例模型：** 內建的 **mao_pro** / **haru** / **hiyori** / **natori** 為 Live2D Inc. 範例資料，依 **Live2D 無償提供材料授權**使用（見 [`LICENSE-Live2D.md`](./LICENSE-Live2D.md)），必須保留致謝句：
+- **Live2D Cubism 與內建範例模型：** 內建的 **mao_pro** / **haru** / **hiyori** 為 Live2D Inc. 範例資料，依 **Live2D 無償提供材料授權**使用（見 [`LICENSE-Live2D.md`](./LICENSE-Live2D.md)），必須保留致謝句：
   > This content uses sample data owned and copyrighted by Live2D Inc.
 
   它們以**未修改**形式作為免費預設附帶。**任何付費／商用版本都必須替換**成你自己的 CC0／已授權／委託製作的模型。
