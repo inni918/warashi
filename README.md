@@ -164,7 +164,8 @@ This fork's own source code is released under the **MIT License**, on top of Ope
 
 This is a free, open-source project — no paywall. If it's useful to you, a tip is appreciated but never required:
 
-Donation links coming soon.
+- **Ko-fi:** [ko-fi.com/leonhsueh](https://ko-fi.com/leonhsueh)
+- **GitHub Sponsors:** coming soon
 
 And please support the upstream project this is built on — [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber).
 
@@ -299,7 +300,8 @@ uv run run_server.py     # 啟動伺服器
 
 這是免費開源專案，沒有付費牆。如果它對你有幫助，歡迎（但絕非必須）小額贊助：
 
-捐款連結即將開放。
+- **Ko-fi:** [ko-fi.com/leonhsueh](https://ko-fi.com/leonhsueh)
+- **GitHub Sponsors:** 即將開放
 
 也請支持本專案所建構於的上游 — [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber)。
 
