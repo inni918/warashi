@@ -187,6 +187,12 @@ class WebSocketServer:
             name="cache",
         )
 
+        # Ensure static dirs exist before mounting. Empty dirs (notably avatars/)
+        # are not shipped in a fresh download/clone, and mounting a missing
+        # directory raises at startup — which would crash every first launch.
+        for _static_dir in ("live2d-models", "backgrounds", "avatars"):
+            os.makedirs(_static_dir, exist_ok=True)
+
         # Mount static files with CORS-enabled handlers
         self.app.mount(
             "/live2d-models",
