@@ -35,7 +35,7 @@ It is a **friendly re-packaging** of the excellent [Open-LLM-VTuber](https://git
 - **Sleep / do-not-disturb mode** — say "晚安" (goodnight) and it stops initiating; it resumes the next time you talk to it. The keyword is configurable.
 - **Character management** — create / edit / switch / delete characters: name + persona + Live2D skin + voice + its own separate memory.
 - **First-run setup wizard** — paste an API key (OpenAI / Claude / Gemini) or pick a local Ollama model. The wizard runs a quick test call before saving.
-- **LLM settings tab** — Ollama mode lets you type a model name by hand, so you can use cloud models too (e.g. `minimax-m3:cloud`).
+- **LLM settings tab** — Ollama mode lets you type a model name by hand, so you can use cloud models too (e.g. `gpt-oss:cloud`).
 - **Performance presets** — Light / Standard / High-performance, bundling ASR/TTS engine choice + memory-consolidation frequency + model keep-alive.
 - **Cross-language translation** — optional subtitle / voice translation (off by default).
 - **Works out of the box** — bundled sample Live2D model + free cloud TTS (edge-tts) + auto-downloaded small ASR model. You only have to plug in an LLM.
@@ -92,9 +92,9 @@ Easiest. In the **first-run setup wizard** (or the **LLM settings tab** later), 
 
 Install [Ollama](https://ollama.com), pull a model (e.g. `ollama pull qwen2.5`), then choose Ollama in the wizard / settings tab. Fully local, no API key, no cloud cost.
 
-### Option C — Cloud models through Ollama (e.g. `minimax-m3:cloud`)
+### Option C — Cloud models through Ollama (e.g. `gpt-oss:cloud`)
 
-Ollama can also proxy certain **cloud** models. In **Ollama mode you can type the model name by hand**, including cloud names ending in `:cloud` (e.g. `minimax-m3:cloud`).
+Ollama can also proxy certain **cloud** models. In **Ollama mode you can type the model name by hand**, including cloud names ending in `:cloud` (e.g. `gpt-oss:cloud`).
 
 > **Important:** cloud models through Ollama require you to be signed in first — run **`ollama signin`** in a terminal before using them, or the call will fail.
 
@@ -208,7 +208,7 @@ Issues and pull requests are welcome.
 - **睡眠／勿擾模式**：說「晚安」它就停止主動發話，下次你跟它說話時恢復。關鍵字可改。
 - **角色管理**：建立／編輯／切換／刪除角色 — 名稱＋人設＋Live2D 皮＋語音＋各自獨立的記憶。
 - **首次啟動設定精靈**：貼上 API key（OpenAI／Claude／Gemini）或選本地 Ollama 模型，存檔前會先做一次測試呼叫。
-- **LLM 設定分頁**：Ollama 模式可手動填模型名，因此也能用雲端模型（如 `minimax-m3:cloud`）。
+- **LLM 設定分頁**：Ollama 模式可手動填模型名，因此也能用雲端模型（如 `gpt-oss:cloud`）。
 - **效能預設**：輕量／標準／高效能三檔，一鍵搭配好 ASR/TTS 引擎＋記憶整理頻率＋模型常駐。
 - **跨語言翻譯**：可選的字幕／語音翻譯（預設關閉）。
 - **開箱即用**：內建範例 Live2D 模型＋免費雲端語音（edge-tts）＋自動下載的小型語音辨識模型，你只要插上一個 LLM。
@@ -251,7 +251,7 @@ uv run run_server.py     # 啟動伺服器
 
 - **方案 A — 雲端 API key（OpenAI／Claude／Gemini）**：最簡單。在設定精靈（或之後的 LLM 設定分頁）貼上 key，精靈測試通過後寫進 `conf.yaml`。**存檔後重啟啟動器**才會生效。
 - **方案 B — 本地 Ollama**：安裝 [Ollama](https://ollama.com)、拉一個模型（如 `ollama pull qwen2.5`），在精靈選 Ollama。完全本地、不用 key、零雲端費用。
-- **方案 C — 透過 Ollama 用雲端模型（如 `minimax-m3:cloud`）**：Ollama 模式可**手動填模型名**，包含 `:cloud` 結尾的雲端模型。
+- **方案 C — 透過 Ollama 用雲端模型（如 `gpt-oss:cloud`）**：Ollama 模式可**手動填模型名**，包含 `:cloud` 結尾的雲端模型。
   > **重要：** 用雲端模型前必須先登入，請在終端機執行 **`ollama signin`**，否則呼叫會失敗。
 
 ### ⚠️ 思考型（reasoning）模型不適用
