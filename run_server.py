@@ -135,6 +135,22 @@ def run(console_log_level: str):
 
     atexit.register(WebSocketServer.clean_cache)
 
+    # First run: if conf.yaml is missing (e.g. a fresh download where conf.yaml is
+    # not shipped), create it from the bundled default template so every entry
+    # point works — the double-click launcher AND a plain `uv run run_server.py`.
+    if not os.path.exists("conf.yaml"):
+        import shutil
+
+        _template = "config_templates/conf.warashi.default.yaml"
+        if os.path.exists(_template):
+            shutil.copy(_template, "conf.yaml")
+            logger.info(
+                "conf.yaml not found — created it from "
+                "config_templates/conf.warashi.default.yaml (first run)."
+            )
+        else:
+            logger.warning("conf.yaml not found and no default template available.")
+
     # Load configurations from yaml file
     config: Config = validate_config(read_yaml("conf.yaml"))
     server_config = config.system_config
