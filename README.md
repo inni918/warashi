@@ -2,7 +2,7 @@
 
 > A free, open-source, beginner-friendly **desktop AI companion** with a Live2D avatar — long-term memory, proactive chat, natural voice, and a sleep mode. Bring your own LLM; everything else works out of the box.
 
-**Language:** **English** | [繁體中文](#繁體中文)
+**Language:** **English** | [繁體中文](#繁體中文) | [日本語](./README.JP.md)
 
 ![License](https://img.shields.io/badge/license-MIT%20core%20%2B%20bundled%20terms-blue)
 ![Built on Open-LLM-VTuber](https://img.shields.io/badge/built%20on-Open--LLM--VTuber-orange)
@@ -203,7 +203,7 @@ Issues and pull requests are welcome.
 
 # 繁體中文
 
-**語言：** [English](#warashi) | **繁體中文**
+**語言：** [English](#warashi) | **繁體中文** | [日本語](./README.JP.md)
 
 ## 這是什麼？
 

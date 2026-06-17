@@ -1,152 +1,199 @@
-![](./assets/banner.jpg)
+# Warashi
 
-<h1 align="center">Open-LLM-VTuber</h1>
-<h3 align="center">
+> 無料・オープンソースで、はじめての人にもやさしい **デスクトップ AI コンパニオン**。Live2D アバター付きで、長期記憶・自発的なおしゃべり・自然な音声・おやすみモードを備えています。LLM（頭脳）だけ自分で用意すれば、あとは最初から全部そろっています。
 
-[![GitHub release](https://img.shields.io/github/v/release/Open-LLM-VTuber/Open-LLM-VTuber)](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/releases) 
-[![license](https://img.shields.io/github/license/Open-LLM-VTuber/Open-LLM-VTuber)](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/blob/master/LICENSE) 
-[![CodeQL](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/actions/workflows/codeql.yml/badge.svg)](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/actions/workflows/codeql.yml)
-[![Ruff](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/actions/workflows/ruff.yml/badge.svg)](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/actions/workflows/ruff.yml)
-[![Docker](https://img.shields.io/badge/Open-LLM-VTuber%2FOpen--LLM--VTuber-%25230db7ed.svg?logo=docker&logoColor=blue&labelColor=white&color=blue)](https://hub.docker.com/r/Open-LLM-VTuber/open-llm-vtuber) 
-[![QQ User Group](https://img.shields.io/badge/QQ_User_Group-792615362-white?style=flat&logo=qq&logoColor=white)](https://qm.qq.com/q/ngvNUQpuKI)
-[![Static Badge](https://img.shields.io/badge/Join%20Chat-Zulip?style=flat&logo=zulip&label=Zulip(dev-community)&color=blue&link=https%3A%2F%2Folv.zulipchat.com)](https://olv.zulipchat.com)
+**言語:** [English](./README.md) | [繁體中文](./README.md#繁體中文) | **日本語**
 
-> **📢 v2.0 開発中**: 現在、Open-LLM-VTuber v2.0の開発に注力しています — これはコードベースの完全な書き直しです。v2.0は現在、初期の議論と計画段階にあります。v1への機能リクエストに関する新しいissueやpull requestの提出はお控えください。v2の議論に参加したい、または貢献したい場合は、[Zulip](https://olv.zulipchat.com)の開発者コミュニティにご参加ください。週次ミーティングのスケジュールはZulipで発表されます。v1のバグ修正と既存のpull requestの対応は継続します。
+![License](https://img.shields.io/badge/license-MIT%20core%20%2B%20bundled%20terms-blue)
+![Built on Open-LLM-VTuber](https://img.shields.io/badge/built%20on-Open--LLM--VTuber-orange)
+![Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgrey)
 
+---
 
-[![BuyMeACoffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/yi.ting)
-[![](https://dcbadge.limes.pink/api/server/3UDA8YFDXx)](https://discord.gg/3UDA8YFDXx)
+## これは何？
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Open-LLM-VTuber/Open-LLM-VTuber)
+**Warashi** は、画面の中の Live2D キャラクターを「本当に会話できる AI コンパニオン」に変えてくれます。あなたのことを覚えていて、自分から話しかけてきて、あなたが話している間は耳をかたむけ、「おやすみ」と言えば静かになります。
 
-[English README](./README.md) | [中文 README](./README.CN.md) | [한국어 README](./README.KR.md) | 日本語 README
+これは、すばらしいオープンソースプロジェクト [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) を **やさしく再パッケージ** したものです。私たちはその土台の上に立っています。上流（Open-LLM-VTuber）が、しっかりした Live2D + 音声認識/音声合成 + LLM の仕組みを提供してくれているので、この fork ではそれを「**ダウンロード → ダブルクリック → おしゃべり**」という、技術にくわしくない人でも使える体験に包み直しました。さらに、記憶システム、自発的な会話、自然に割り込める音声、キャラクター管理、アプリ内のセットアップウィザード、そして完全な二言語（英語 / 繁體中文）UI を追加しています。
 
-[ドキュメント](https://open-llm-vtuber.github.io/docs/quick-start) | [![Roadmap](https://img.shields.io/badge/Roadmap-GitHub_Project-yellow)](https://github.com/orgs/Open-LLM-VTuber/projects/2)
+**私たちの方針 — そして、あえて「やらない」こと：**
 
-<a href="https://trendshift.io/repositories/12358" target="_blank"><img src="https://trendshift.io/api/badge/repositories/12358" alt="Open-LLM-VTuber%2FOpen-LLM-VTuber | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+- **無料・オープンソース、寄付は任意。** 有料プランも、ペイウォール（課金の壁）もありません。
+- **モバイル版は作りません。** デスクトップ専用です（macOS / Windows）。
+- **モデルのマーケットプレイスや、著作権のあるキャラクターの同梱はしません。** これは Live2D の商用ライセンスの落とし穴を避けるためです。私たちが同梱するのは中立的な無料デフォルトだけ。キャラクター・声・LLM はあなた自身が用意します。
 
-</h3>
+> 本プロジェクトは Open-LLM-VTuber の上に構築されています。完全なクレジットと各コンポーネントのライセンスは [`NOTICE`](./NOTICE) を、元プロジェクトのドキュメントは [`README.upstream.md`](./README.upstream.md) をご覧ください。
 
+---
 
-> よくある質問 (中国語で作成): https://docs.qq.com/pdf/DTFZGQXdTUXhIYWRq
+## 機能
+
+- **長期記憶** — あなたが誰で、何に取り組んでいるかを覚えていて、時間とともにあなたのことを少しずつ理解していきます。キャラクターごとに用意された「コア記憶」がペルソナに注入され、各ターンのあと LLM が「何を残す価値があるか」を判断します。更新はすぐに反映されます（再起動不要）。記憶の上限は調整できます。
+- **深い記憶の呼び出し（FTS5 trigram）** — オプトイン式で、これまで話したすべての履歴を全文検索できます。CJK（中日韓）にもきちんと対応しています。
+- **自発的な話題** — しばらく沈黙が続くと、自分から話題をふってきます。任意で、最新の AI / テック / アニメ / ゲームのニュースを取り込んで話題にすることもできます（純粋な標準ライブラリだけのヘルパーで、**API キーは不要**）。
+- **自然に割り込める音声チャット** — いつでも話しかけられます。マイクの順番を待つ必要はなく、本物の会話のように途中で言葉をさえぎることもできます。
+- **スリープ / おやすみ（おじゃましない）モード** — 「晚安（おやすみ）」と言えば自分から話しかけてこなくなり、次にあなたが話しかけたときに再開します。キーワードは自由に変えられます。
+- **キャラクター管理** — キャラクターの作成 / 編集 / 切り替え / 削除ができます。名前 + ペルソナ + Live2D の見た目 + 声 + キャラごとに独立した記憶を持てます。
+- **初回起動時のセットアップウィザード** — API キー（OpenAI / Claude / Gemini）を貼り付けるか、ローカルの Ollama モデルを選びます。ウィザードは保存する前に、軽いテスト呼び出しを実行して動作を確認します。
+- **LLM 設定タブ** — Ollama モードでは、モデル名を手入力できます。そのためクラウドモデルも使えます（例：`gpt-oss:cloud`）。
+- **パフォーマンスプリセット** — ライト / スタンダード / ハイパフォーマンスの 3 段階。ASR/TTS エンジンの選択 + 記憶の整理（consolidation）の頻度 + モデルの常駐（keep-alive）をまとめて切り替えます。
+- **言語をまたぐ翻訳** — 任意の字幕 / 音声の翻訳（デフォルトはオフ）。
+- **すぐに使える** — サンプルの Live2D モデル + 無料のクラウド TTS（edge-tts）+ 自動ダウンロードされる小さな ASR モデルが同梱されています。あなたは LLM を差し込むだけです。
+- **完全な二言語 UI** — 繁體中文（zh）と英語（en）。
+
+---
+
+## スクリーンショット
+
+![Warashi — あなたの Live2D AI コンパニオンが実際に動いているところ](assets/warashi-hero.png)
+
+*デスクトップで動く Warashi：本当に会話できる Live2D アバター。*
+
+---
+
+## クイックスタート（ダウンロード → ダブルクリック → おしゃべり）
+
+いちばん簡単な道のり。**ターミナルは不要です。**
+
+> **始める前に：AI の「頭脳」（LLM）が必要です。**
+> Warashi は **体と顔** です — アバター、声、記憶。実際に考えて話す **頭脳** は、*あなた自身* が用意する別の AI です。次の 2 つのうちどちらかを選びます。セットアップウィザードの中で設定できるので、いま全部決めておく必要はありません。
+> - **(A) 有料のクラウド AI を使う** — [OpenAI](https://platform.openai.com/api-keys)、Claude、Gemini のいずれかで API キーを取得し、貼り付けます。小さなモデルなら、ふつうは **1 回のおしゃべりで数円程度** で済みます。
+> - **(B) 無料のローカル AI を動かす** — 無料の **[Ollama](https://ollama.com)** アプリをインストールすると、あなた自身のパソコンの中で頭脳が動きます。**費用はかかりません** が、それなりに性能のあるパソコンが必要です。
 >
-> ユーザーアンケート: https://forms.gle/w6Y6PiHTZr1nzbtWA
->
-> アンケート(中国語): https://wj.qq.com/s2/16150415/f50a/
+> いまは何もダウンロードしなくて大丈夫です。下のインストールが終わるのを待つ間に、どちらに気持ちが傾いているかだけ決めておきましょう。
 
-> :warning: このプロジェクトはまだ初期段階にあり、現在 **活発に開発中** です。
+1. **Warashi をダウンロードする。** [**Releases ページ**](https://github.com/inni918/warashi/releases/latest) にアクセスし、最新の `Warashi-*.zip` をダウンロードして解凍します（例：デスクトップへ）。_（または、リポジトリのトップページで緑色の **`<> Code`** ボタン → **Download ZIP** からでも入手できます。）_
+2. 解凍したフォルダの中の **ランチャーをダブルクリック** します：
+   - **macOS：** `start-companion.command`
+   - **Windows：** `start-companion.bat`
+   - 初回起動では、すべて（まず `uv`、続いて依存関係）が自動でインストールされ、数分かかることがあります。**その窓は閉じないでください — それがサーバー本体です。**
+3. ブラウザが自動で **http://localhost:12393** を開きます。初回は **セットアップウィザード** が表示されます。**API キーを貼り付ける**（OpenAI / Claude / Gemini）か、**ローカルの Ollama モデルを選ぶ** かのどちらかです。ウィザードは保存する前に選んだ内容をテストします。
 
-> :warning: サーバーをリモートで実行し、他のデバイス（例：PCでサーバーを実行し、スマホからアクセス）を通じてアクセスするには、`https` 設定が必要です。これはフロントエンドのマイク機能がセキュアな環境（https または localhost）でのみ動作するためです。詳細はこちら-\> [MDN Web Doc](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)。したがって、リモートデバイス（つまりlocalhost以外の環境）からページにアクセスするには、リバースプロキシを使用してhttpsを設定する必要があります。
+   ![Warashi 初回起動時のセットアップウィザード](assets/warashi-setup.png)
 
-## ⭐️ このプロジェクトは何ですか？
+   *初回起動時のセットアップウィザード。ここで AI の「頭脳」を差し込みます。*
 
-**Open-LLM-VTuber** は、**リアルタイム音声会話** と **視覚認識** をサポートするだけでなく、生き生きとした **Live2Dアバター** を備えた **音声対話型AIコンパニオン** です。すべての機能はコンピュータ上で完全にオフラインで実行できます！
+4. **再起動すると、新しい頭脳が有効になります。** **手順 2 で開いたランチャー / ターミナルの窓を閉じて** 終了し（これでサーバーが止まります）、もう一度 **ランチャーをダブルクリック** して、新しい LLM とともに起動し直します。（アプリ内でも、LLM の変更は「再起動後 — またはキャラクターを一度切り替えたあとに反映されます」と案内されます。）あとはおしゃべりを始めましょう。ページを一度クリックすると音声が有効になります。
 
-個人的なAIコンパニオンとして活用できます — `virtual girlfriend`、`boyfriend`、`cute pet` など、期待に合わせてどのようなキャラクターにもなれます。このプロジェクトは `Windows`、`macOS`、`Linux` を完全にサポートしており、**Webバージョン** と **デスクトップクライアント** の2つの使用モードを提供します。特に **透明背景のデスクトップマスコットモード** をサポートしており、AIコンパニオンが画面上のどこにでも一緒にいることができます。
+> **macOS の Gatekeeper（初回のみ）：** ダブルクリックすると「*開発元が未確認のため開けません*」と表示されることがあります。これは署名されていないオープンソースアプリでは正常なことです。`start-companion.command` を **右クリック → 開く → 開く** をダイアログで選んでください。一度許可すれば、それ以降はダブルクリックで開けます。（署名 / 公証（notarize）済みのビルドは提供していません — これが無料版です。）
 
-長期記憶機能は一時的に削除されましたが（まもなく再提供予定）、チャットログの **永続保存** のおかげで、以前に終わらなかった会話を **中断することなく続けることができ**、貴重なインタラクションの瞬間を失うことはありません。
+> **Windows の SmartScreen（初回のみ）：** ダブルクリックすると、青い「**WindowsによってPCが保護されました**」というボックスが出ることがあります。これは署名されていないオープンソースアプリでは正常なことです。**詳細情報** → **実行** をクリックしてください。一度許可すれば、もう聞かれません。
 
-バックエンドサポートの面では、様々なLLM推論、テキスト読み上げ（TTS）、音声認識ソリューションを統合しました。AIコンパニオンをカスタマイズしたい場合は、[Character Customization Guide](https://open-llm-vtuber.github.io/docs/user-guide/live2d)を参照して、AIコンパニオンの外見や性格をカスタマイズできます。
+そのままの状態では、同梱の **mao** サンプル Live2D モデルと **edge-tts**（無料のクラウド音声、GPU 不要）が使われます。初回起動時には、小さな音声認識（speech-to-text）モデルも自動でダウンロードされます。
 
-このプロジェクトが `Open-LLM-Companion` や `Open-LLM-Waifu` ではなく `Open-LLM-Vtuber` という名前である理由は、初期の開発目標が **Windows以外のプラットフォームでもオフラインで実行可能なオープンソースソリューションを活用** し、**クローズドなAI Vtuberである `neuro-sama` を再現** することだったためです。
+### ターミナルのほうがいい？（上級者向け）
 
-### 👀 効果実証
-| ![](assets/i1.jpg) | ![](assets/i2.jpg) |
-|:---:|:---:|
-| ![](assets/i3.jpg) | ![](assets/i4.jpg) |
+ほとんどの人は、上の **Download ZIP** の道のりで十分です。ターミナルに慣れているなら、代わりにリポジトリを clone してもかまいません。**Python ≥ 3.10, < 3.13** と [`uv`](https://github.com/astral-sh/uv) が必要です。
 
+```bash
+git clone https://github.com/inni918/warashi.git && cd warashi
+uv sync                  # 依存関係をインストール
+uv run run_server.py     # サーバーを起動
+# http://localhost:12393 を開く → セットアップウィザード → おしゃべり
+```
 
-## ✨ 機能 & 主な特徴
+ウィザードが、あなたの LLM の選択を `conf.yaml` に書き込んでくれます。もちろん手で編集することもできます（下記参照）。
 
-  - 🖥️ **クロスプラットフォーム対応**: `macOS`、`Linux`、`Windows` と完全に互換性があります。NVIDIA GPUおよび非NVIDIA GPUの両方をサポートし、CPU実行やクラウドAPIを活用した高負荷作業の実行オプションも提供します。一部のコンポーネントはmacOSでのGPUアクセラレーションをサポートしています。
+---
 
-  - 🔒 **オフラインモード対応**: ローカルモデルを使用して完全にオフラインで実行でき、インターネット接続は必要ありません。会話内容はユーザーのデバイスにのみ保存され、プライバシーとセキュリティが保護されます。
+## LLM のセットアップ（必須）
 
-  - 💻 **魅力的で強力なWebおよびデスクトップクライアント**: Webバージョンとデスクトップクライアントの2つの使用モードを提供し、豊富なインタラクション機能とパーソナライズ設定をサポートします。デスクトップクライアントはウィンドウモードとデスクトップマスコットモードを自由に切り替えることができ、AIコンパニオンが常にそばにいることができます。
+クラウド LLM の API キー、**または** 動作中のローカル LLM の、**どちらか一方** が必要です。コンパニオンとのおしゃべりには安いモデルで十分で、最上位のモデルは必要ありません。
 
-  - 🎯 **高度なインタラクション機能**:
+### 方法 A — クラウドの API キー（OpenAI / Claude / Gemini）
 
-      - 👁️ 視覚認識: カメラ、画面録画、スクリーンショットをサポートし、AIコンパニオンがユーザーの姿や画面を見ることができます。
-      - 🎤 ヘッドフォンなしでの音声認識: AIが自分の声を聞かずに、音声を処理できます。
-      - 🫱 タッチフィードバック: クリックやドラッグでAIコンパニオンと対話できます。
-      - 😊 Live2D 表情: バックエンドで感情マッピングを設定し、モデルの表情を制御できます。
-      - 🐱 ペットモード: 透明背景、常に手前に表示、マウスクリック透過をサポートし、AIコンパニオンを画面のどこへでも自由に移動できます。
-      - 💭 AIの内面表現: AIが話さなくても、AIの表情、思考、行動を確認できます。
-      - 🗣️ AI能動発話機能: ユーザーが話さなくてもAIが先に話しかける機能。
-      - 💾 チャットログの永続保存: いつでも以前の会話に切り替えることができます。
-      - 🌍 TTS翻訳サポート: 例：AIは日本語の音声で話しながら、中国語でチャットすることができます。
+いちばん簡単です。**初回起動時のセットアップウィザード**（またはあとで **LLM 設定タブ**）で、OpenAI・Claude・Gemini のいずれかの API キーを貼り付けます。ウィザードが軽いテスト呼び出しで検証してから、`conf.yaml` に書き込みます。新しい LLM を有効にするには、**保存後にランチャーを再起動** してください。
 
-  - 🧠 **広範なモデルサポート**:
+### 方法 B — ローカルの Ollama
 
-      - 🤖 Large Language Models (LLM): Ollama, OpenAI (およびOpenAI互換API), Gemini, Claude, Mistral, DeepSeek, Zhipu AI, GGUF, LM Studio, vLLM, etc.
-      - 🎙️ Automatic Speech Recognition (ASR): sherpa-onnx, FunASR, Faster-Whisper, Whisper.cpp, Whisper, Groq Whisper, Azure ASR, etc.
-      - 🔊 Text-to-Speech (TTS): sherpa-onnx, pyttsx3, MeloTTS, Coqui-TTS, GPTSoVITS, Bark, CosyVoice, Edge TTS, Fish Audio, Azure TTS, etc.
+[Ollama](https://ollama.com) をインストールし、モデルを pull して（例：`ollama pull qwen2.5`）、ウィザード / 設定タブで Ollama を選びます。完全にローカルで、API キーも、クラウド料金も不要です。
 
-  - 🔧 **高いカスタマイズの自由度**:
+### 方法 C — Ollama 経由でクラウドモデルを使う（例：`gpt-oss:cloud`）
 
-      - ⚙️ **簡単なモジュール構成**: 簡単な設定ファイルの修正だけで様々な機能モジュールを切り替えることができ、コードの修正は必要ありません。
-      - 🎨 **キャラクターカスタマイズ**: カスタムLive2Dモデルを取り込み、AIコンパニオンに固有の外見を与えることができます。Promptを修正してAIコンパニオンの性格を設定し、**ボイスクローニング** を通じて希望の声を与えることができます。
-      - 🧩 **柔軟なAgent実装**: Agentインターフェースを継承・実装し、HumeAI EVI、OpenAI Her、Mem0など、様々なAgentアーキテクチャを統合できます。
-      - 🔌 優れた拡張性: モジュール式設計により、独自のLLM、ASR、TTSなどのモジュールを簡単に追加でき、いつでも新しい機能を拡張できます。
+Ollama は、特定の **クラウド** モデルをプロキシすることもできます。**Ollama モードではモデル名を手入力できる** ので、`:cloud` で終わるクラウド名（例：`gpt-oss:cloud`）も指定できます。
 
-## 👥 ユーザーレビュー
+> **重要：** Ollama 経由のクラウドモデルは、先にサインインしている必要があります。使う前にターミナルで **`ollama signin`** を実行してください。そうしないと呼び出しが失敗します。
 
-> 開発者の方に感謝します。すべての人が使用できるようにパートナーをオープンソースで共有していただきありがとうございます。
->
-> このパートナーは10万回以上使用されました。
+### ⚠️ 推論（「思考」）モデルは非対応です
 
-## 🚀 クイックスタート
+**`glm-4.7:cloud`** のような推論モデルは、答えを別の `reasoning` フィールドに入れ、通常の `content` フィールドを **空のまま** にします。このアプリは `content` しか読まないため、推論モデルでは **返事が空白** になります。そして読み上げる文字がないので、**音声も出ません**。
 
-インストールについては、ドキュメントの [Quick Start](https://open-llm-vtuber.github.io/docs/quick-start) セクションを参照してください。
+**おすすめ：** 通常の（推論ではない）チャットモデルを選んでください。小さくて速いモデルのほうが、結局のところより自然で、遅延の少ないコンパニオンになります。
 
+> 手動編集する場合：LLM の設定は `conf.yaml` の `character_config → agent_config → llm_configs → openai_compatible_llm` の下にあります。ファイル内のコメントに、OpenAI / Claude / Gemini を自分のキーで指す方法が書いてあります。編集後はランチャーを再起動してください。
 
+---
 
-## ☝ アップデート
+## その他の設定
 
-> :warning: `v1.0.0` バージョンには **互換性のない変更** があり、再デプロイが必要です。以下の方法でアップデート **することは可能ですが**、`conf.yaml` ファイルに互換性がなく、ほとんどの依存関係を `uv` で再インストールする必要があります。`v1.0.0` 以前のバージョンからアップグレードする場合は、[最新のデプロイガイド](https://open-llm-vtuber.github.io/docs/quick-start)を参照してプロジェクトを再デプロイすることを推奨します。
+### 記憶（コア + 深い呼び出し）
+デフォルトでオンです。各キャラクターは自分の記憶を `chat_history/<conf_uid>/core_memory.md` に保持します。ペルソナに注入されるコア記憶に加えて、ターンごとに LLM が整理（consolidation）します（何を残すかはモデルが判断）。オプトインの **FTS5 trigram による深い呼び出し** は、長期的な記憶が欲しいときに、全履歴を検索します。記憶の上限は設定で調整できます。
 
-`v1.0.0` 以降のバージョンをインストールしている場合、アップデートは `uv run update.py` を使用してください。
+### キャラクター
+アプリ内でキャラクターの作成 / 編集 / 切り替え / 削除ができます。それぞれが自分の名前、ペルソナ、Live2D の見た目、声、そして **独立した記憶** を持ちます。自分の Live2D モデルを追加するには、`live2d-models/<name>/` の下に置き、`model_dict.json` にエントリを追加して、選択します。**著作権のあるキャラクターモデルを公開リポジトリに commit しないでください。**
 
-## 😢 アンインストール (Uninstall)
+#### もっとキャラクターを（任意）
+ライセンス上の安全のため、Warashi が同梱しているのは **3 体の無料 Live2D オリジナルキャラクター**（`mao_pro`、`haru`、`hiyori`）だけです。もっと欲しい場合 — 男性執事キャラクターの **Natori（名取）** を含め — 公式ページから無料の公式 Live2D サンプルモデルを自分でダウンロードして入れることができます。**[Live2D のサンプルモデルページ](https://www.live2d.com/en/learn/sample/)** から、Live2D 自身のライセンスのもとで入手してください — 私たちは再配布していません。手順は [`docs/add-live2d-character.md`](docs/add-live2d-character.md) を参照してください。
 
-ほとんどのファイルは、Pythonの依存関係とモデルを含め、プロジェクトフォルダに保存されます。
+### パフォーマンスプリセット
+**ライト / スタンダード / ハイパフォーマンス** のプリセットが、ASR/TTS エンジンの選択、記憶の整理（consolidation）の頻度、モデルの常駐（keep-alive）をまとめて切り替えます。控えめなマシンならライトを、ハードウェアに余裕があればハイパフォーマンスを選びましょう。
 
-ただし、ModelScopeやHugging Faceを通じてダウンロードしたモデルは `MODELSCOPE_CACHE` または `HF_HOME` に保存されている可能性があります。プロジェクトの `models` ディレクトリに保管することが目標ですが、一度確認してみることをお勧めします。
+### 自発的な話題 & ニュース
+コンパニオンは、しばらく操作がないと話題をふってきます。任意で、同梱のニュースヘルパー（`scripts/news_topics.py`）で最新の見出しを取り込んで話題を更新できます — 純粋な標準ライブラリのみ、API キー不要 — そして、これを定期実行（cron / launchd / タスク スケジューラ）に登録しておくとよいでしょう（例：数時間おき）。
 
-また、インストールガイドを参照して、不要になった追加ツール（`uv`、`ffmpeg`、`deeplx` など）がないか確認してください。
+### スリープ / 静かモード
+「晚安（おやすみ）」と言えば自分から話しかけてこなくなり、次のメッセージで再開します。キーワードは変更できます。
 
-## 🤗 貢献したいですか？
+### 翻訳
+任意の、言語をまたぐ字幕 / 音声の翻訳です。**デフォルトはオフ**（`conf.yaml` の `tts_preprocessor_config → translator_config`）。
 
-[Development Guide](https://docs.llmvtuber.com/docs/development-guide/overview)を参照してください。
+### 音声
+デフォルトは **edge-tts**（無料、ハードウェア不要）です。高品質なローカル / カスタム音声が欲しい場合は、[GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS) をサービスとして動かし、設定でそこを指してください（GPU または Apple Silicon が必要）。実在の人物の声をクローンすることは、あなた自身の法的責任です。
 
-# 🎉🎉🎉 関連プロジェクト
+---
 
-[ylxmf2005/LLM-Live2D-Desktop-Assitant](https://github.com/ylxmf2005/LLM-Live2D-Desktop-Assitant)
+## ガイド
 
-  - LLMで駆動する **Live2D デスクトップアシスタント** です！ WindowsとMacOSの両方で使用可能で、画面を検出し、クリップボードの内容を取得し、固有の声で音声コマンドに反応します。**ウェイクワード、歌唱機能**、コンピュータ全体の制御をサポートし、好きなキャラクターとスムーズに対話できます。
+- [スマホ / タブレットから使う（Tailscale）](docs/remote-access-tailscale.md) — 自宅のネットワークの外からでも、別のデバイスでコンパニオンに接続できます。
+- [GPT-SoVITS でカスタム音声](docs/custom-voice-gpt-sovits.md) — キャラクターにクローン音声やカスタム音声を与えます。
+- [自分の Live2D キャラクターを追加する](docs/add-live2d-character.md) — モデルを入れて、それに切り替えます。
 
+## クレジット & ライセンス
 
+このプロジェクトは、その土台となっている上流の成果なしには存在しません。**[Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) にも star を付けて応援** してください。
 
+- **上流：** [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) — そのサーバー側コードは MIT、Copyright (c) 2025 Yi-Ting Chiu。
+- **この fork の追加部分**（記憶、自発的な話題、割り込み、静かモード、キャラクター管理、セットアップウィザード、パフォーマンスプリセット、二言語 UI）— MIT。
+- **同梱の Web フロントエンド** — `frontend/` 内のコンパイル済み Web バンドルは Open-LLM-VTuber-Web フロントエンドで、**Open-LLM-VTuber License 1.0**（Apache-2.0 + 追加条件）のもとにあります。無料・非商用の使用と再配布は許可されています。商用のリブランド、有料ホスティング / SaaS、または有料製品への組み込みには、Open-LLM-VTuber チームからの別途の商用ライセンスが必要です。この fork は無料・非商用なので、ライセンスが許可する範囲に収まっています。[`NOTICE`](./NOTICE) を参照。
+- **Live2D Cubism & 同梱サンプルモデル** — 同梱の **mao_pro** / **haru** / **hiyori** モデルは Live2D Inc. のサンプルデータで、**Live2D 無償提供マテリアルライセンス** のもとで使用しています（[`LICENSE-Live2D.md`](./LICENSE-Live2D.md) を参照）。必須の表記：
+  > This content uses sample data owned and copyrighted by Live2D Inc.
 
+  これらは無料デフォルトとして **未改変のまま** 同梱されています。**有料 / 商用ビルドでは、必ず** あなた自身の CC0 / ライセンス取得済み / 委託制作のモデルに **差し替えてください。**
+- **その他のコンポーネント**（各ライセンスは [`NOTICE`](./NOTICE) を参照）：GPT-SoVITS（MIT、任意の TTS）、sherpa-onnx（Apache-2.0、ASR エンジン — SenseVoice モデルには独自のライセンスあり。または Whisper を使用）、Silero VAD（MIT）、edge-tts（Microsoft のオンライン TTS サービスを利用）、DeepLX（非公式の DeepL エンドポイント — 本番環境では公式の DeepL API を使用）。
 
-## 📜 サードパーティライセンス (Third-Party Licenses)
+**著作権のあるキャラクター、アートワーク、声、学習済みの音声モデルを配布しないでください。** このリポジトリが同梱するのは中立的なデフォルトだけです。それ以外は自分で用意してください。
 
-### Live2D サンプルモデルに関する通知 (Live2D Sample Models Notice)
+### ライセンス
 
-このプロジェクトには、**Live2D Inc.から提供されたLive2Dサンプルモデル** が含まれています。当該資産は **Live2D Free Material License Agreement** および **Live2D Cubism Sample Data 利用規約** に基づき別途ライセンスが付与されており、このプロジェクトのMITライセンスには含まれません。
+この fork 自身のソースコードは **MIT ライセンス** のもとで公開されており、Open-LLM-VTuber の MIT ライセンスのサーバーコード（Copyright (c) 2025 Yi-Ting Chiu）の上に構築されています。ただし、**プロジェクト全体が単純な MIT というわけではありません**。`frontend/` に同梱されているコンパイル済み Web フロントエンドは **Open-LLM-VTuber License 1.0**（Apache-2.0 + 追加条件）のもとにあり、同梱の Live2D サンプルモデルには独自の Live2D 条項が付いています。完全で正確な全体像については、[`LICENSE`](./LICENSE)、[`NOTICE`](./NOTICE)、[`LICENSE-Live2D.md`](./LICENSE-Live2D.md) を参照してください。
 
-このコンテンツはLive2D Inc.が所有し著作権を持つサンプルデータを使用しており、Live2D Inc.が定めた **規約と条件** に従って活用されます。（詳細は [Live2D Free Material License Agreement](https://www.live2d.jp/en/terms/live2d-free-material-license-agreement/) および [Terms of Use](https://www.live2d.com/eula/live2d-sample-model-terms_en.html) を参照）
+---
 
-注：特に中堅・大規模企業での **商用利用** の際、このLive2Dサンプルモデルの使用には追加のライセンス要件が適用される場合があります。プロジェクトを商用利用する計画がある場合は、必ずLive2D Inc.から適切な許可を得るか、当該モデルが含まれていないバージョンを使用してください。
+## このプロジェクトを応援する
 
-## コントリビューター
+これは無料・オープンソースのプロジェクトで、ペイウォールはありません。お役に立てたなら、チップ（投げ銭）はうれしいですが、けっして必須ではありません。
 
-このプロジェクトを可能にしてくださった **コントリビューターとメンテナの方々に感謝いたします。**
+- **Ko-fi:** [ko-fi.com/leonhsueh](https://ko-fi.com/leonhsueh)
+- **GitHub Sponsors:** 近日公開
 
-<a href="https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=Open-LLM-VTuber/Open-LLM-VTuber" />
-</a>
+そして、これが構築されている上流のプロジェクト — [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) — もぜひ応援してください。
 
-## スター履歴 (Star History)
+---
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Open-LLM-VTuber/open-llm-vtuber&type=Date)](https://star-history.com/#Open-LLM-VTuber/open-llm-vtuber&Date)
+## 貢献（コントリビュート）
+
+Issue と pull request を歓迎します。
+
+- バグや機能のアイデアは **Issues** に登録してください。
+- コードの変更は、わかりやすい説明を付けて **Pull Request** を開いてください。
+- 著作権のあるキャラクター、アートワーク、声、学習済みの音声モデルは **追加しないでください** — リポジトリを、中立的なデフォルトだけの「配布できる」状態に保ってください。
