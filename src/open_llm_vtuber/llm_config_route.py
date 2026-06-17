@@ -76,13 +76,30 @@ _FORWARD_HEADERS = ("x-forwarded-for", "x-forwarded-host", "x-real-ip", "forward
 # Small helpers
 # --------------------------------------------------------------------------- #
 
+def _allow_remote_config() -> bool:
+    """Opt-in escape hatch: when system_config.allow_remote_config is true, the
+    localhost-only admin guard below is relaxed so settings (LLM / character /
+    translation) can be changed remotely — e.g. via Tailscale Serve from another
+    device. Default FALSE. Only enable on a network you fully trust, since it lets
+    anyone who can reach the server change these settings (there is no password)."""
+    try:
+        with open(CONF_PATH, encoding="utf-8") as f:
+            data = YAML(typ="safe").load(f) or {}
+        return bool((data.get("system_config") or {}).get("allow_remote_config", False))
+    except Exception:
+        return False
+
+
 def _is_local_request(request: Request) -> bool:
     """True only if the request originates DIRECTLY from the local machine.
 
     Requires both a local client.host AND the absence of any proxy/forwarding
     header — so a reverse proxy or Tailscale Serve in front of a localhost-bound
-    server cannot pass off a remote user as local.
+    server cannot pass off a remote user as local. The system_config
+    allow_remote_config flag (default false) overrides this for a trusted network.
     """
+    if _allow_remote_config():
+        return True
     client = request.client
     if client is None or client.host not in LOCAL_HOSTS:
         return False
