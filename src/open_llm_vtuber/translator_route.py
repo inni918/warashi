@@ -279,18 +279,32 @@ def _write_translator_config(
     written["translate_provider"] = engine
 
     # 2b. Display-only subtitle leaves (independent of translate_audio). Bool +
-    #     quoted string. These keys must already exist in conf.yaml (added by hand).
+    #     quoted string. If a leaf is ABSENT (an older conf.yaml / template that
+    #     predates the subtitle feature), INSERT it at the top of the
+    #     translator_config block rather than failing the whole save with a
+    #     KeyError -> "Could not write config file". tc_end is bumped so the later
+    #     llm/deeplx block lookups (which guard on `< tc_end`) stay correct.
     if subtitle_enabled is not None:
         if not _rewrite_bool_leaf(
             lines, tc_start + 1, tc_end, "translate_subtitle", subtitle_enabled
         ):
-            raise KeyError("translate_subtitle leaf not found in translator_config")
+            lines.insert(
+                tc_start + 1,
+                f"{' ' * (tc_indent + 2)}translate_subtitle: "
+                f"{'True' if subtitle_enabled else 'False'}\n",
+            )
+            tc_end += 1
         written["translate_subtitle"] = subtitle_enabled
     if subtitle_target_lang is not None:
         if not _rewrite_leaf(
             lines, tc_start + 1, tc_end, "subtitle_target_lang", subtitle_target_lang
         ):
-            raise KeyError("subtitle_target_lang leaf not found in translator_config")
+            lines.insert(
+                tc_start + 1,
+                f"{' ' * (tc_indent + 2)}subtitle_target_lang: "
+                f"{_quote_yaml_scalar(subtitle_target_lang)}\n",
+            )
+            tc_end += 1
         written["subtitle_target_lang"] = subtitle_target_lang
 
     # 3. Nested llm block leaves (re-find extent after edits don't change line count).
