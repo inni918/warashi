@@ -19,14 +19,6 @@ class CharacterConfig(I18nMixin):
     character_name: str = Field(default="", alias="character_name")
     human_name: str = Field(default="Human", alias="human_name")
     avatar: str = Field(default="", alias="avatar")
-    # Explicit voice language for the character's TTS voice (V). Short bucket:
-    # 'ja' / 'zh' / 'en' / 'ko' (empty "" = auto-derive). This is the AUTHORITATIVE
-    # source for the audio-translate gate + target: the spoken reply is translated
-    # INTO this language whenever the detected reply language differs from it.
-    # Needed for engines whose voice language can't be read off an edge_tts locale
-    # subtag (e.g. GPT-SoVITS). Default "" keeps existing configs valid and falls
-    # back to the edge_tts voice-name parse in derive_voice_lang().
-    voice_language: str = Field(default="", alias="voice_language")
     persona_prompt: str = Field(..., alias="persona_prompt")
     agent_config: AgentConfig = Field(..., alias="agent_config")
     asr_config: ASRConfig = Field(..., alias="asr_config")
@@ -99,15 +91,6 @@ class CharacterConfig(I18nMixin):
         "avatar": Description(
             en="Avatar image path for the character", zh="角色头像图片路径"
         ),
-        "voice_language": Description(
-            en="Voice language of the TTS voice ('ja'/'zh'/'en'/'ko', empty=auto). "
-            "The audio reply is translated into this language when the reply language "
-            "differs. Required for engines (e.g. GPT-SoVITS) whose language can't be "
-            "read off an edge_tts locale.",
-            zh="TTS 語音的語言（'ja'/'zh'/'en'/'ko'，留空＝自動推導）。"
-            "回覆語言與此不同時，語音會翻譯成此語言。"
-            "GPT-SoVITS 等無法從 edge_tts locale 推導語言的引擎需要設定。",
-        ),
         "long_term_memory_enabled": Description(
             en="Enable long-term (core) memory: consolidation + injection",
             zh="啟用長期（核心）記憶：整理 + 注入",
@@ -163,20 +146,6 @@ class CharacterConfig(I18nMixin):
         except (TypeError, ValueError):
             return 1
         return n if n in (1, 3, 5) else 1
-
-    @field_validator("voice_language")
-    def clamp_voice_language(cls, v):
-        # Normalize to a known short bucket; fail-soft to "" (= auto-derive) on
-        # anything unrecognized rather than rejecting the whole config. Accepts a
-        # few common aliases/locale-ish inputs so hand-edited values still work.
-        if not v:
-            return ""
-        s = str(v).strip().lower()
-        # take the locale language subtag if a full locale was given (e.g. ja-JP)
-        s = s.split("-", 1)[0].split("_", 1)[0]
-        aliases = {"jp": "ja", "jpn": "ja", "chi": "zh", "cn": "zh", "eng": "en", "kr": "ko", "kor": "ko"}
-        s = aliases.get(s, s)
-        return s if s in {"ja", "zh", "en", "ko"} else ""
 
     @field_validator("persona_prompt")
     def check_default_persona_prompt(cls, v):

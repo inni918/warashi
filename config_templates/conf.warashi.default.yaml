@@ -36,7 +36,6 @@ character_config:
   character_name: 'AI' # 显示为 AI 的名称
   avatar: '' # 留空则使用角色名称的首字母作为头像。
   human_name: 'User' # 显示为人类的名称
-  voice_language: '' # 此角色 TTS 語音的語言（'ja'/'zh'/'en'/'ko'）。回覆語言與此不同時，語音會翻成此語言再念，確保語音永遠是角色自己的語言。留空＝自動推導（從 edge_tts locale；GPT-SoVITS 等推不出的引擎請務必明設）
   long_term_memory_enabled: True # 長期（核心）記憶：關閉後不整理、也不注入記憶到提示詞
   core_memory_max_chars: 1500 # 核心記憶字數上限（500–8000）。越大越能記、但每輪 token 越多、整理更易遺漏
   fts_memory_enabled: False # 深度回憶（全歷史搜尋）：開啟後每輪在此角色全部過去對話裡找相關片段帶進來。預設關閉（純本地、不需模型）

@@ -52,43 +52,86 @@ def _detect_lang(text: str) -> Optional[str]:
     return None
 
 
+def _normalize_lang(raw: Optional[str]) -> Optional[str]:
+    """Normalize a raw engine language string to a known bucket {'ja','zh','en','ko'}.
+
+    Handles GPT-SoVITS style tags ('all_ja' / 'all_zh' / 'all_ko' / 'yue' / 'auto' /
+    'auto_yue') as well as plain codes ('ja' / 'zh' / 'en' / 'ko'). 'yue' (Cantonese)
+    maps to 'zh'; 'auto'/'auto_yue' map to None (engine auto-detects -> don't gate).
+    Returns None when nothing recognizable is found.
+    """
+    if not raw:
+        return None
+    s = str(raw).strip().lower()
+    if s in ("auto", "auto_yue"):
+        return None
+    if "ja" in s:
+        return "ja"
+    if "zh" in s or "yue" in s:
+        return "zh"
+    if "ko" in s:
+        return "ko"
+    if "en" in s:
+        return "en"
+    return None
+
+
 def derive_voice_lang(character_config: Any) -> Optional[str]:
     """Derive the active character's voice language V (one of {'ja','zh','en','ko'}).
 
-    Resolution order:
-    1. EXPLICIT ``character_config.voice_language`` (lowercased, clamped to the known
-       set) when set. This is the AUTHORITATIVE source and the only reliable one for
-       engines whose voice language can't be read off a locale subtag (GPT-SoVITS,
-       fish, sherpa, etc.) — e.g. a Japanese GPT-SoVITS voice should set 'ja'.
-    2. FALLBACK: the locale language subtag (part before the FIRST hyphen) of
-       ``character_config.tts_config.edge_tts.voice`` (e.g. 'ja-JP-NanamiNeural' -> 'ja',
-       'zh-CN-XiaoyiNeural' -> 'zh'), lowercased and clamped to {'ja','zh','en','ko'}.
+    V now comes FROM THE VOICE PACK (the active TTS config), NOT from a per-character
+    field — the voice pack already declares the language of the voice it speaks, so that
+    is the authoritative source. When a character swaps its voice pack it automatically
+    gets the new pack's language (no separate field to keep in sync).
 
-    Returns None when V cannot be derived (no explicit field + no tts_config / non-edge
-    engine / edge_tts None / unrecognized subtag). A None V means "skip gating" -> speak
-    R verbatim, since cross-language voice is the opt-in case (an unknown voice should
-    not silently trigger translation).
+    Resolution: read the active engine from ``character_config.tts_config.tts_model``,
+    then read that engine's own language declaration:
+    - ``edge_tts``    -> the locale language subtag (part before the FIRST hyphen) of
+                         ``tts_config.edge_tts.voice`` (e.g. 'ja-JP-NanamiNeural' -> 'ja',
+                         'zh-TW-HsiaoChenNeural' -> 'zh').
+    - ``gpt_sovits_tts`` -> ``tts_config.gpt_sovits_tts.text_lang`` (e.g. 'all_ja' -> 'ja',
+                         'all_zh' -> 'zh', 'all_ko' -> 'ko'); 'auto'/'auto_yue' -> None.
+    - ``x_tts`` -> its ``.language`` field, normalized.
+
+    Everything is clamped to {'ja','zh','en','ko'}. Returns None when V cannot be derived
+    (no tts_config / engine has no readable language / unrecognized value). A None V means
+    "skip gating" -> speak the reply verbatim, since cross-language voice is the opt-in
+    case (an unknown voice should not silently trigger translation).
     """
     try:
-        # 1. Explicit per-character voice_language wins.
-        explicit = getattr(character_config, "voice_language", None)
-        if explicit:
-            subtag = str(explicit).strip().lower()
-            if subtag in _KNOWN_LANGS:
-                return subtag
-
-        # 2. Fall back to the edge_tts voice-name locale subtag.
         tts_config = getattr(character_config, "tts_config", None)
         if tts_config is None:
             return None
-        edge_tts = getattr(tts_config, "edge_tts", None)
-        if edge_tts is None:
-            return None
-        voice = getattr(edge_tts, "voice", None)
-        if not voice:
-            return None
-        subtag = str(voice).split("-", 1)[0].strip().lower()
-        return subtag if subtag in _KNOWN_LANGS else None
+
+        engine = getattr(tts_config, "tts_model", None)
+
+        # edge_tts: parse the locale subtag off the voice name (KEEP existing logic).
+        if engine == "edge_tts":
+            edge_tts = getattr(tts_config, "edge_tts", None)
+            if edge_tts is None:
+                return None
+            voice = getattr(edge_tts, "voice", None)
+            if not voice:
+                return None
+            subtag = str(voice).split("-", 1)[0].strip().lower()
+            return subtag if subtag in _KNOWN_LANGS else None
+
+        # GPT-SoVITS: read+normalize the declared text language ('all_ja' -> 'ja', etc.).
+        if engine == "gpt_sovits_tts":
+            gpt_sovits = getattr(tts_config, "gpt_sovits_tts", None)
+            if gpt_sovits is None:
+                return None
+            return _normalize_lang(getattr(gpt_sovits, "text_lang", None))
+
+        # Other engines that expose a plain language field.
+        if engine == "x_tts":
+            x_tts = getattr(tts_config, "x_tts", None)
+            if x_tts is None:
+                return None
+            return _normalize_lang(getattr(x_tts, "language", None))
+
+        # Unknown / unsupported engine -> can't read a voice language -> skip gating.
+        return None
     except Exception as e:
         logger.debug(f"Could not derive voice language: {type(e).__name__}: {e}")
         return None
