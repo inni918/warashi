@@ -53,18 +53,31 @@ def _detect_lang(text: str) -> Optional[str]:
 
 
 def derive_voice_lang(character_config: Any) -> Optional[str]:
-    """Derive the active character's voice language V from its edge_tts voice ShortName.
+    """Derive the active character's voice language V (one of {'ja','zh','en','ko'}).
 
-    V = the locale language subtag (part before the FIRST hyphen) of
-    ``character_config.tts_config.edge_tts.voice`` (e.g. 'ja-JP-NanamiNeural' -> 'ja',
-    'zh-CN-XiaoyiNeural' -> 'zh'), lowercased and clamped to {'ja','zh','en','ko'}.
+    Resolution order:
+    1. EXPLICIT ``character_config.voice_language`` (lowercased, clamped to the known
+       set) when set. This is the AUTHORITATIVE source and the only reliable one for
+       engines whose voice language can't be read off a locale subtag (GPT-SoVITS,
+       fish, sherpa, etc.) — e.g. a Japanese GPT-SoVITS voice should set 'ja'.
+    2. FALLBACK: the locale language subtag (part before the FIRST hyphen) of
+       ``character_config.tts_config.edge_tts.voice`` (e.g. 'ja-JP-NanamiNeural' -> 'ja',
+       'zh-CN-XiaoyiNeural' -> 'zh'), lowercased and clamped to {'ja','zh','en','ko'}.
 
-    Returns None when V cannot be derived (no tts_config / non-edge engine / edge_tts
-    None / unrecognized subtag). A None V means "skip gating" -> speak R verbatim, since
-    cross-language voice is the opt-in case (a non-edge or unknown voice should not
-    silently trigger translation).
+    Returns None when V cannot be derived (no explicit field + no tts_config / non-edge
+    engine / edge_tts None / unrecognized subtag). A None V means "skip gating" -> speak
+    R verbatim, since cross-language voice is the opt-in case (an unknown voice should
+    not silently trigger translation).
     """
     try:
+        # 1. Explicit per-character voice_language wins.
+        explicit = getattr(character_config, "voice_language", None)
+        if explicit:
+            subtag = str(explicit).strip().lower()
+            if subtag in _KNOWN_LANGS:
+                return subtag
+
+        # 2. Fall back to the edge_tts voice-name locale subtag.
         tts_config = getattr(character_config, "tts_config", None)
         if tts_config is None:
             return None
@@ -177,8 +190,12 @@ async def handle_sentence_output(
       language ``voice_lang`` (V) differs from the detected reply language R of the
       sentence. Same-language (e.g. Japanese reply + Japanese voice) -> skip + speak R
       verbatim. When V cannot be derived (None) the gate is skipped (speak verbatim).
-      The engine's actual TARGET stays the user-configured target_lang; V only drives
-      the skip/translate DECISION.
+      The engine's TARGET is V itself (the character's voice language): it is built in
+      service_context.init_translate with target = V (mapped per provider), so when the
+      gate fires the reply is translated INTO V. So a character with a Japanese voice
+      always speaks Japanese; one with a Chinese voice always speaks Chinese — regardless
+      of the reply language. (Falls back to the conf's global target_lang only when V
+      can't be derived.) V here only drives the skip/translate DECISION.
     - SUBTITLE (display-only): ``subtitle_translate_engine`` rewrites a SEPARATE
       ``subtitle_text`` for the on-screen subtitle. UNCHANGED: gated only by the user's
       explicit subtitle language pick (built in init_translate). The canonical reply

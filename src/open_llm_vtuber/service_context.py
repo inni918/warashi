@@ -54,6 +54,10 @@ class ServiceContext:
         # translate_engine can be none if translation is disabled
         self.vad_engine: VADInterface | None = None
         self.translate_engine: TranslateInterface | None = None
+        # Voice language (V) the current audio translate_engine was built to target.
+        # Tracked so the audio engine is rebuilt when V changes on a character switch
+        # even if the translator_config block itself is unchanged.
+        self._audio_translate_voice_lang: str | None = None
         # display-only subtitle translation engine; None when disabled
         self.subtitle_translate_engine: TranslateInterface | None = None
 
@@ -235,6 +239,9 @@ class ServiceContext:
         self.vad_engine = vad_engine
         self.agent_engine = agent_engine
         self.translate_engine = translate_engine
+        # Unknown which V a cached engine was built for; force a rebuild on the next
+        # load_from_config so the audio target matches the active character's V.
+        self._audio_translate_voice_lang = None
         self.subtitle_translate_engine = subtitle_translate_engine
         # Load potentially shared components by reference
         self.mcp_server_registery = mcp_server_registery
@@ -306,8 +313,15 @@ class ServiceContext:
             config.character_config.persona_prompt,
         )
 
+        # Derive the NEW character's voice language V from the config being loaded
+        # (self.character_config is still the OLD one here — it's assigned below).
+        # The audio translate engine targets V so the spoken voice always matches the
+        # character's voice language regardless of the reply (player) language.
+        from .conversations.conversation_utils import derive_voice_lang
+
         self.init_translate(
-            config.character_config.tts_preprocessor_config.translator_config
+            config.character_config.tts_preprocessor_config.translator_config,
+            voice_lang=derive_voice_lang(config.character_config),
         )
 
         # store typed config references
@@ -423,7 +437,9 @@ class ServiceContext:
             logger.error(f"Failed to initialize agent: {e}")
             raise
 
-    def init_translate(self, translator_config: TranslatorConfig) -> None:
+    def init_translate(
+        self, translator_config: TranslatorConfig, voice_lang: str | None = None
+    ) -> None:
         """Initialize or update the translation engine(s) based on the configuration.
 
         Two independent engines are built from the SAME translator_config:
@@ -434,6 +450,11 @@ class ServiceContext:
           character's voice language V against the detected reply language R — translate
           only when V != R. So the engine being present no longer means "translate
           everything"; it just means the capability is ready.
+          Its TARGET is now V (``voice_lang`` — the CHARACTER's voice language), mapped
+          to the provider's expected format, so a reply in any language is spoken in the
+          character's own voice language. The global per-conf target_lang stays only as
+          a FALLBACK when V can't be derived. Rebuilt per character switch (this method
+          re-runs on switch), so a new character's V takes effect immediately.
         - ``subtitle_translate_engine``: DISPLAY-ONLY path (translates the reply text
           for the on-screen subtitle). Built only when ``translate_subtitle`` is True.
           It targets ``subtitle_target_lang`` and NEVER mutates the canonical reply
@@ -444,6 +465,10 @@ class ServiceContext:
             self.character_config.tts_preprocessor_config.translator_config
             != translator_config
         )
+        # Rebuild the audio engine whenever V changes too, even if translator_config is
+        # otherwise identical (e.g. two characters that share a translator block but
+        # have different voice languages).
+        voice_lang_changed = voice_lang != self._audio_translate_voice_lang
 
         # --- AUDIO translation engine (now ALWAYS built; gate is per-sentence) ---
         # translate_audio is kept as an internal auto-on flag (always True in conf), so
@@ -452,16 +477,29 @@ class ServiceContext:
             # Defensive: only if a user manually forces translate_audio=False in conf.
             logger.debug("Audio translation engine disabled (translate_audio=False).")
             self.translate_engine = None
-        elif not self.translate_engine or config_changed:
-            logger.info(
-                f"Initializing audio Translator: {translator_config.translate_provider}"
-            )
-            self.translate_engine = TranslateFactory.get_translator(
-                translator_config.translate_provider,
-                getattr(
-                    translator_config, translator_config.translate_provider
-                ).model_dump(),
-            )
+            self._audio_translate_voice_lang = None
+        elif not self.translate_engine or config_changed or voice_lang_changed:
+            provider = translator_config.translate_provider
+            # Copy the provider block and override its target leaf with V (mapped per
+            # provider). If V can't be derived/mapped, keep the conf's global target.
+            audio_cfg = getattr(translator_config, provider).model_dump()
+            mapped = self._map_voice_lang_to_provider_target(voice_lang, provider)
+            if mapped is not None:
+                if provider == "deeplx":
+                    audio_cfg["deeplx_target_lang"] = mapped
+                else:  # llm / tencent both use 'target_lang'
+                    audio_cfg["target_lang"] = mapped
+                logger.info(
+                    f"Initializing audio Translator: {provider} -> "
+                    f"V={voice_lang} (target={mapped})"
+                )
+            else:
+                logger.info(
+                    f"Initializing audio Translator: {provider} -> "
+                    f"global target_lang (V={voice_lang} not mappable)"
+                )
+            self.translate_engine = TranslateFactory.get_translator(provider, audio_cfg)
+            self._audio_translate_voice_lang = voice_lang
         else:
             logger.info("Audio translation already initialized with the same config.")
 
@@ -535,6 +573,37 @@ class ServiceContext:
                 f"{type(e).__name__}: {e}"
             )
             return None
+
+    @staticmethod
+    def _map_voice_lang_to_provider_target(
+        voice_lang: str | None, provider: str
+    ) -> str | None:
+        """Map a short voice-language bucket V ('ja'/'zh'/'en'/'ko') to the target
+        value the given provider expects. Returns None when V is empty/unknown so the
+        caller falls back to the conf's global target_lang (fail-soft).
+
+        - deeplx: needs a target CODE. Reuse the SAME name->code resolver the subtitle
+          translator uses (resolve_deepl_target_lang); a plain code like 'JA' passes
+          through unchanged.
+        - llm: takes a HUMAN-READABLE label dropped into a Chinese prompt -> 日文/中文/...
+        - tencent: takes a lowercase language code -> ja/zh/en/ko (== V already).
+        """
+        if not voice_lang:
+            return None
+        v = str(voice_lang).strip().lower()
+        if v not in ("ja", "zh", "en", "ko"):
+            return None
+        provider = (provider or "").lower()
+        if provider == "deeplx":
+            # uppercased short codes; all in resolve_deepl_target_lang's known set
+            from .translate.deeplx import resolve_deepl_target_lang
+
+            return resolve_deepl_target_lang(v.upper())
+        elif provider == "llm":
+            return {"ja": "日文", "zh": "中文", "en": "English", "ko": "韓文"}[v]
+        elif provider == "tencent":
+            return v  # tencent uses lowercase codes
+        return None
 
     # ==== utils
 
