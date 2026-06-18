@@ -35,7 +35,7 @@
 - **睡眠 / 免打扰模式** —— 说一句「晚安」它就停止主动发话；下次你跟它说话时恢复。关键词可配置。
 - **角色管理** —— 创建 / 编辑 / 切换 / 删除角色：名称 + 人设 + Live2D 皮肤 + 语音 + 各自独立的记忆。
 - **首次启动设置向导** —— 粘贴一个 API key（OpenAI / Claude / Gemini），或选一个本地 Ollama 模型。向导在保存前会先做一次快速测试调用。
-- **LLM 设置标签页** —— Ollama 模式允许你手动输入模型名，因此也能用云端模型（例如 `gpt-oss:cloud`）。
+- **LLM 设置标签页** —— 粘贴一个 API key，或选择／手动输入一个 Ollama 模型（本地模型，或通过 Ollama 提供的云端模型）。
 - **性能预设** —— 轻量 / 标准 / 高性能三档，一键搭配好 ASR/TTS 引擎选择 + 记忆整理频率 + 模型常驻。
 - **跨语言翻译** —— 可选的字幕 / 语音翻译（默认关闭）。
 - **开箱即用** —— 内置示例 Live2D 模型 + 免费云端 TTS（edge-tts）+ 自动下载的语音识别（ASR）模型（约 1GB，仅在第一次启动时下载一次、需要几分钟）。你只需要插上一个 LLM。
@@ -56,12 +56,11 @@
 最简单的路径 —— **完全不用终端。**
 
 > **开始前先准备好：你需要一颗 AI「大脑」（LLM）。**
-> Warashi 是**身体和脸** —— 形象、声音、记忆都有了。真正会思考、会说话的**大脑**，是一个另外的 AI，由*你*来提供。可以在设置向导里再设置（现在不用把所有事都决定好）。下面按从易到难列出选项：
-> - **（最简单、推荐）用 Ollama Cloud 免费方案** —— 不用 API key、不用绑信用卡、也不用一台很强的电脑。安装免费的 **[Ollama](https://ollama.com)** 应用，运行 `ollama signin` 注册一个免费账号（免绑卡），就能用像 `gpt-oss:20b-cloud` 这种够力的云端模型。它跑在 Ollama 的服务器上，所以你自己的电脑不用很快。**完全免费（$0）**，但有「轻量使用」额度限制（详见下方方案 C）。
-> - **（A）用付费的云端 AI** —— 去 [OpenAI](https://platform.openai.com/api-keys)、Claude 或 Gemini 拿一个 API key 粘贴进去。用小模型的话，通常**一次聊天只要几分钱**。
-> - **（B）跑免费的本地 AI** —— 安装免费的 **[Ollama](https://ollama.com)** 应用，它就在你自己的电脑上跑一颗大脑。**完全免费**，但需要一台还算够力的电脑。
->
-> 现在还不用先下载任何东西 —— 只要在等下面的安装跑完之前，心里有个方向就好。
+> Warashi 是**身体和脸** —— 形象、声音、记忆都有了。真正会思考、会说话的**大脑**，是一个另外的 AI，由*你*来提供。你会在首次启动向导里设置它。下面按从易到难列出选项：
+> - **（推荐 —— 免费、私密、跑在你自己的电脑上）通过 Ollama 用本地模型。** 安装免费的 **[Ollama](https://ollama.com)** 应用，然后在终端里运行 `ollama pull qwen2.5:3b`（一个约 1.9 GB 的小模型）。Warashi 的默认本来就指向它，所以直接就能用 —— **不用账号、不用 API key、零费用、可离线，而且你的对话永远不会离开你的电脑。** 一般 8–16 GB 的笔记本就跑得动。（想要更聪明的回复、内存也够？拉一个更大的模型，例如 `qwen2.5:7b`，再到设置里选它。）
+> - **（可选 —— 电脑较弱时质量更好）Ollama Cloud 免费方案。** Ollama 可以在*它的*服务器上免费跑一个更大的模型（有额度限制）。需要一个免费账号 —— 见下方**方案 B**；你必须先 `ollama pull` 那个云端模型。
+> - **（可选 —— 免费里质量最好）免费的云端 API key。** Google AI Studio（Gemini）、Cerebras 或 Groq 提供免费 key（免绑信用卡）。免费选项里质量最好，但需要账号 + key，而且你的对话会送到该服务商。见**方案 C**。
+> - **（如果你本来就有付费的）云端 API key**：来自 OpenAI／Claude／Gemini —— 顶级质量，一次聊天几分钱。见**方案 D**。
 
 1. **下载 Warashi。** 到 [**Releases 页面**](https://github.com/inni918/warashi/releases/latest) 下载最新的 `Warashi-*.zip`，然后解压（例如解到桌面）。_（或者在 repo 主页点绿色的 **`<> Code`** 按钮 → **Download ZIP**。）_
 2. **双击解压后文件夹里的启动器**：
@@ -101,30 +100,30 @@ uv run run_server.py     # start the server
 
 你需要**二者择一**：一个云端 LLM 的 API key，**或**一个正在运行的本地 LLM。陪伴聊天用便宜的模型就足够了 —— 不需要旗舰级。
 
-### 方案 A —— 云端 API key（OpenAI / Claude / Gemini）
+#### 方案 A —— 本地 Ollama（推荐：免费、私密、不用账号）
+安装 [Ollama](https://ollama.com/download)，然后在终端里运行 `ollama pull qwen2.5:3b`（约 1.9 GB）。Warashi 的默认本来就用 `qwen2.5:3b`，所以下载完成后、下次重启就能用 —— 不用 API key、不用账号、没有云端费用、完全离线，而且你的对话都留在你的电脑上。一般 8–16 GB 的笔记本就跑得很顺。想要更聪明的回复，可以拉一个更大的模型（例如 `qwen2.5:7b`），再到 LLM 设置标签页里选它。
 
-最简单。在**首次启动设置向导**（或之后的 **LLM 设置标签页**）里，粘贴你的 OpenAI、Claude 或 Gemini 的 API key。向导会用一次快速测试调用来验证它，然后写进 `conf.yaml`。**保存后重启启动器**，新的 LLM 才会生效。
+#### 方案 B —— 通过 Ollama 使用云端模型（免费账号；电脑较弱时很合适）
+Ollama 可以在它自己的服务器上跑一个*更大的*模型，所以慢的电脑也能得到不错的回复。免费方案，但需要一个账号，而且你必须先把模型拉下来：
+1. 从 [ollama.com/download](https://ollama.com/download) 安装 Ollama（v0.12+）。
+2. 到 [ollama.com](https://ollama.com) 注册一个免费账号，然后在终端里运行 `ollama signin`。
+3. **运行 `ollama pull gpt-oss:20b-cloud` —— 必须先拉下来才能用。**（只在设置里填名字是不够的。）
+4. 在 LLM 设置标签页里选 Ollama，把模型设成 `gpt-oss:20b-cloud`。
 
-### 方案 B —— 本地 Ollama
+`gpt-oss:20b-cloud` 是最适合免费额度的轻量模型；`qwen3.5:cloud` 或 `minimax-m3:cloud` 更强，但会更快用掉免费额度。
 
-安装 [Ollama](https://ollama.com)，拉一个模型（例如 `ollama pull qwen2.5`），然后在向导 / 设置标签页里选 Ollama。完全本地，不用 API key，没有云端费用。
+> **关于「免费」，老实说：** 免绑信用卡、完全 $0，只要一个免费账号 —— 但属于*轻量使用*等级：一次只能跑一个云端模型，会话额度约每 5 小时重置一次、外加每周额度，而且 Ollama 没有公布确切数字，所以聊太多可能会碰到额度上限、要等重置。推理跑在 **Ollama 的服务器上**，所以不要发送你想完全保密的内容。云端模型还处于 preview 阶段 —— **依赖它之前，先确认它真的能回一次。**
 
-### 方案 C —— 通过 Ollama 使用云端模型（推荐最简单，例如 `gpt-oss:20b-cloud`）
+#### 方案 C —— 免费的云端 API key（Gemini / Cerebras / Groq）
+免费选项里聊天质量最好。注册一个免费账号（免绑信用卡），创建一个 API key，到 LLM 设置标签页粘贴 key 并填对应的 base URL：
+- **Google AI Studio（Gemini）：** `https://generativelanguage.googleapis.com/v1beta/openai/` —— 免费额度大方；注意 Google 可能会用免费方案的对话来改进它的产品。
+- **Cerebras：** `https://api.cerebras.ai/v1` —— 很快，每天约 100 万 token 免费（免费方案的 context window 较短）。
+- **Groq：** `https://api.groq.com/openai/v1` —— 很快，有每日 token 上限。
 
-**这是非技术用户最简单、不用 API key 的路径。** Ollama 会代理跑在它服务器上的强力云端模型，所以你自己的电脑不用很快 —— 而且免费方案**完全 $0、免绑卡**。步骤：
+请用各服务商文档里目前可用的模型名。你的对话会送到该服务商，而且免费方案有速率限制。
 
-1. 从 [ollama.com/download](https://ollama.com/download) 安装 Ollama。
-2. 在终端里运行 **`ollama signin`** 注册一个免费账号（免绑卡）。
-3. 运行 **`ollama pull gpt-oss:20b-cloud`** 拉取推荐模型。
-4. 在 Warashi 的 **Ollama 模式**里填入模型名 `gpt-oss:20b-cloud`。
-
-拉下来的云端模型，是通过 Warashi 本来就在用的同一个本地 Ollama 端点（OpenAI 兼容、`localhost:11434`）提供服务的，所以 Warashi 原本的 Ollama 模式直接就能用。
-
-**推荐模型：** `gpt-oss:20b-cloud` —— 它标记为「Low Usage」，最能扛住免费额度。更强的替代如 `qwen3.5:cloud` 或 `minimax-m3:cloud` 能力更好，但会更快用掉额度。
-
-> **关于免费方案，老实说：** 它真的**完全 $0、免绑卡、只要一个免费账号** —— 但属于*轻量使用*等级。Ollama **一次只能跑一个云端模型**，会话额度约每 5 小时重置一次，每周额度每 7 天重置一次。Ollama **没有公布确切数字**，所以聊太多可能会暂时碰到额度上限，需等重置。由于推理跑在 **Ollama 的服务器上（不是你的机器）**，不要发送你想完全保密的内容。
-
-> **重要：** 通过 Ollama 使用云端模型，需要你先登录 —— 在终端里运行 **`ollama signin`** 之后再用，否则调用会失败。
+#### 方案 D —— 付费的云端 API key（OpenAI / Claude / Gemini）
+如果你本来就有付费的，把 key 粘贴进向导即可。质量最高；用小模型通常一次聊天只要几分钱。
 
 ### ⚠️ 不支持思考型（reasoning）模型
 

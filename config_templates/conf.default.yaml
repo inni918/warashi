@@ -98,7 +98,7 @@ character_config:
         llm_api_key: 'somethingelse'
         organization_id: null
         project_id: null
-        model: 'qwen2.5:latest'
+        model: 'qwen2.5:3b'
         template: 'CHATML'
         temperature: 1.0 # value between 0 to 2
         interrupt_method: 'user'
@@ -109,7 +109,7 @@ character_config:
         llm_api_key: 'somethingelse'
         organization_id: null
         project_id: null
-        model: 'qwen2.5:latest'
+        model: 'qwen2.5:3b'
         temperature: 1.0 # value between 0 to 2
         interrupt_method: 'user'
         # This is the method to use for prompting the interruption signal. 
@@ -128,7 +128,7 @@ character_config:
 
       ollama_llm:
         base_url: 'http://localhost:11434/v1'
-        model: 'qwen2.5:latest'
+        model: 'qwen2.5:3b'
         temperature: 1.0 # value between 0 to 2
         # seconds to keep the model in memory after inactivity. 
         # set to -1 to keep the model in memory forever (even after exiting open llm vtuber)
@@ -137,7 +137,7 @@ character_config:
 
       lmstudio_llm:
         base_url: 'http://localhost:1234/v1'
-        model: 'qwen2.5:latest'
+        model: 'qwen2.5:3b'
         temperature: 1.0 # value between 0 to 2
 
       openai_llm:

@@ -109,14 +109,15 @@ character_config:
         llm_api_key: 'somethingelse'
         organization_id: null
         project_id: null
-        model: 'qwen2.5:latest'
+        model: 'qwen2.5:3b'
         template: 'CHATML'
         temperature: 1.0 # value between 0 to 2
         interrupt_method: 'user'
 
       # OpenAI 兼容推理后端
       openai_compatible_llm:
-        # 預設走本地 Ollama（免費）。要用雲端：改 base_url + model + llm_api_key：
+        # 預設走本地 Ollama（免費）：先裝 Ollama 並執行 `ollama pull qwen2.5:3b`，開箱即用、免帳號免 key。
+        # 弱機或想要更好品質：用雲端，改 base_url + model + llm_api_key：
         #   OpenAI → base_url https://api.openai.com/v1                              model gpt-4o-mini
         #   Claude → base_url https://api.anthropic.com/v1                           model claude-sonnet-4-6
         #   Gemini → base_url https://generativelanguage.googleapis.com/v1beta/openai/  model gemini-2.0-flash
@@ -124,7 +125,7 @@ character_config:
         llm_api_key: 'ollama' # Ollama 用任意值即可；雲端 API 請填你的 key
         organization_id: null # 组织 ID
         project_id: null # 项目 ID
-        model: 'qwen2.5:latest' # 你的模型（Ollama 已下載的，或雲端模型名）
+        model: 'qwen2.5:3b' # 你的模型（Ollama 已下載的，或雲端模型名）
         temperature: 1.0 # 温度，介于 0 到 2 之间
         interrupt_method: 'user'
         # 用于表示中断信号的方法(提示词模式)。
@@ -143,7 +144,7 @@ character_config:
 
       ollama_llm:
         base_url: 'http://localhost:11434/v1' # Ollama 端點
-        model: 'qwen2.5:latest' # Ollama 上已下載的模型
+        model: 'qwen2.5:3b' # Ollama 上已下載的模型
         temperature: 0.9 # 温度，介于 0 到 2 之间
         # 不活动后模型在内存中保留的时间（秒）
         # 设置为 -1 表示模型将永远保留在内存中（即使退出 open llm vtuber 之后也是）
@@ -152,7 +153,7 @@ character_config:
 
       lmstudio_llm:
         base_url: 'http://localhost:1234/v1'
-        model: 'qwen2.5:latest'
+        model: 'qwen2.5:3b'
         temperature: 1.0 # value between 0 to 2
 
       openai_llm:
@@ -497,7 +498,7 @@ character_config:
 
       llm:
         api_endpoint: 'http://localhost:11434/v1/chat/completions'
-        model: 'qwen2.5:latest'
+        model: 'qwen2.5:3b'
         target_lang: '日文'
 
       deeplx:

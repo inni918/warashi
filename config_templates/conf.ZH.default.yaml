@@ -97,7 +97,7 @@ character_config:
         llm_api_key: 'somethingelse'
         organization_id: null
         project_id: null
-        model: 'qwen2.5:latest'
+        model: 'qwen2.5:3b'
         template: 'CHATML'
         temperature: 1.0 # value between 0 to 2
         interrupt_method: 'user'
@@ -108,7 +108,7 @@ character_config:
         llm_api_key: 'somethingelse' # API 密钥
         organization_id: null # 组织 ID
         project_id: null # 项目 ID
-        model: 'qwen2.5:latest' # 使用的模型
+        model: 'qwen2.5:3b' # 使用的模型
         temperature: 1.0 # 温度，介于 0 到 2 之间
         interrupt_method: 'user'
         # 用于表示中断信号的方法(提示词模式)。
@@ -127,7 +127,7 @@ character_config:
 
       ollama_llm:
         base_url: 'http://localhost:11434/v1' # 基础 URL
-        model: 'qwen2.5:latest' # 使用的模型
+        model: 'qwen2.5:3b' # 使用的模型
         temperature: 1.0 # 温度，介于 0 到 2 之间
         # 不活动后模型在内存中保留的时间（秒）
         # 设置为 -1 表示模型将永远保留在内存中（即使退出 open llm vtuber 之后也是）
@@ -136,7 +136,7 @@ character_config:
 
       lmstudio_llm:
         base_url: 'http://localhost:1234/v1'
-        model: 'qwen2.5:latest'
+        model: 'qwen2.5:3b'
         temperature: 1.0 # value between 0 to 2
 
       openai_llm:
