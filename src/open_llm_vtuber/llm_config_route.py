@@ -20,12 +20,13 @@ Design notes (cheap-tier, "semi-beginner" layer):
 
 import os
 import re
+import json
 import asyncio
 from typing import Any, Optional
 
 import httpx
 from fastapi import APIRouter, Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, StreamingResponse
 from loguru import logger
 from ruamel.yaml import YAML
 
@@ -38,6 +39,12 @@ CONF_PATH = "conf.yaml"
 
 OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"
 OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434/v1"
+OLLAMA_PULL_URL = "http://localhost:11434/api/pull"
+
+# The recommended free, private default brain: small enough for a normal laptop
+# (~1.9 GB) and matches config_templates/conf.*.default.yaml. The wizard can pull
+# this for the user so a non-technical player never has to touch a terminal.
+RECOMMENDED_OLLAMA_MODEL = "qwen2.5:3b"
 
 # Test/validate timeout for the cheap call and the Ollama probe (seconds).
 TEST_CALL_TIMEOUT = 12.0
@@ -422,7 +429,8 @@ def init_llm_config_route() -> APIRouter:
 
     - GET  /api/llm-config                -> current config, masked + is_configured
     - POST /api/llm-config                -> validate then save (ruamel round-trip)
-    - GET  /api/llm-config/ollama-models  -> server-side Ollama probe
+    - GET  /api/llm-config/ollama-models  -> server-side Ollama probe (+ recommended)
+    - POST /api/llm-config/ollama-pull    -> stream a model download (NDJSON progress)
     """
     router = APIRouter()
 
@@ -545,6 +553,54 @@ def init_llm_config_route() -> APIRouter:
         if not _is_local_request(request):
             return _forbidden()
         result = await _probe_ollama_models()
+        result["recommended"] = RECOMMENDED_OLLAMA_MODEL
         return JSONResponse(result)
+
+    @router.post("/api/llm-config/ollama-pull")
+    async def pull_ollama_model(request: Request):
+        """Download an Ollama model, relaying Ollama's /api/pull NDJSON progress to
+        the browser so the wizard can show a progress bar. This lets a non-technical
+        player get the recommended local brain without ever opening a terminal."""
+        if not _is_local_request(request):
+            return _forbidden()
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        model = str(body.get("model") or RECOMMENDED_OLLAMA_MODEL).strip()
+        if not model:
+            return JSONResponse(status_code=400, content={"error": "Missing model name."})
+
+        async def stream():
+            # No client timeout: a model pull can take many minutes on a slow link.
+            try:
+                async with httpx.AsyncClient(timeout=None) as client:
+                    async with client.stream(
+                        "POST",
+                        OLLAMA_PULL_URL,
+                        json={"model": model, "stream": True},
+                    ) as resp:
+                        if resp.status_code != 200:
+                            detail = (await resp.aread()).decode("utf-8", "replace")[:300]
+                            yield json.dumps(
+                                {
+                                    "status": "error",
+                                    "error": f"Ollama returned {resp.status_code}. {detail}".strip(),
+                                }
+                            ) + "\n"
+                            return
+                        async for line in resp.aiter_lines():
+                            if line.strip():
+                                yield line + "\n"
+            except Exception as e:
+                logger.info(f"ollama-pull failed: {type(e).__name__}")
+                yield json.dumps(
+                    {
+                        "status": "error",
+                        "error": "Could not reach Ollama. Is the Ollama app running?",
+                    }
+                ) + "\n"
+
+        return StreamingResponse(stream(), media_type="application/x-ndjson")
 
     return router
