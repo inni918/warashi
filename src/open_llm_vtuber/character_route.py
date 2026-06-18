@@ -409,8 +409,11 @@ def _build_character_config(
         "live2d_model_name": live2d_model_name,
         "persona_prompt": persona_prompt,
     }
-    if character_name:
-        cc["character_name"] = character_name
+    # Always set a display name so the chat bubble / group name shows THIS
+    # character, not the base character it deep-merges from. The UI doesn't always
+    # send an explicit character_name; fall back to conf_name so a created
+    # character never inherits the base's name (e.g. a new "Hiyori" showing 紅莉栖).
+    cc["character_name"] = character_name or conf_name
     if avatar:
         cc["avatar"] = avatar
     if voice:
