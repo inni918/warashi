@@ -36,8 +36,8 @@ class SystemConfig(I18nMixin):
             zh="启用代理模式以支持多个客户端使用一个 ws 连接",
         ),
         "default_background": Description(
-            en="Default background image filename (in backgrounds/) applied to a browser the first time it connects, e.g. 'future-gadget-lab.jpg'. Empty = use the built-in default. Lets the background be set server-side (works in Safari).",
-            zh="預設背景圖檔名(放在 backgrounds/),會在瀏覽器第一次連線時套用,例如 'future-gadget-lab.jpg'。留空＝用內建預設。讓背景可由伺服器端設定(Safari 也適用)。",
+            en="Default background image filename (in backgrounds/) applied to a browser the first time it connects, e.g. 'cityscape.jpeg'. Empty = use the built-in default. Lets the background be set server-side (works in Safari).",
+            zh="預設背景圖檔名(放在 backgrounds/),會在瀏覽器第一次連線時套用,例如 'cityscape.jpeg'。留空＝用內建預設。讓背景可由伺服器端設定(Safari 也適用)。",
         ),
     }
 
