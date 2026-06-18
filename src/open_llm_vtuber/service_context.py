@@ -325,6 +325,21 @@ class ServiceContext:
             logger.critical("Try to proceed without Live2D...")
 
     def init_asr(self, asr_config: ASRConfig) -> None:
+        # 系統層級「玩家語言」推導 ASR 辨識語言（best-effort）。目前 active 模型
+        # sense_voice 只支援 zh/en/ja/ko/yue；clamp 後落在這個集合才覆寫 sherpa 的
+        # language leaf，集合外（如法/德/西）回 'auto'，等於不強制 ＝ 維持原本辨識行為。
+        # 語音路徑（translate_audio）完全不動。只動 sherpa_onnx_asr 這一個 engine。
+        player_language = (
+            getattr(self.system_config, "player_language", "") or ""
+        ).strip()
+        if player_language and asr_config.asr_model == "sherpa_onnx_asr":
+            sherpa_block = getattr(asr_config, "sherpa_onnx_asr", None)
+            if sherpa_block is not None:
+                from .asr.sherpa_onnx_asr import VoiceRecognition as _SherpaASR
+
+                derived = _SherpaASR._clamp_sense_voice_language(player_language)
+                if derived != getattr(sherpa_block, "language", "auto"):
+                    sherpa_block.language = derived
         if not self.asr_engine or (self.character_config.asr_config != asr_config):
             logger.info(f"Initializing ASR: {asr_config.asr_model}")
             self.asr_engine = ASRFactory.get_asr_system(
@@ -565,6 +580,21 @@ class ServiceContext:
                     "\n\n## 你對使用者的長期記憶（之前對話累積下來的，自然運用、不要生硬複述）\n"
                     + core_mem
                 )
+
+        # 系統層級「玩家語言」指令：設定後，無論輸入是什麼語言，所有角色都用玩家語言回覆。
+        # 這是 system-level（套用所有角色），不寫進任何角色人設。放在最後讓它有最高權威性。
+        # 正規回覆（= 字幕 + 對話紀錄 + 記憶）因此都會是玩家語言；語音另由 translate_audio 路徑
+        # 翻成各角色 voice 語言（此處不動語音行為）。
+        player_language = getattr(self.system_config, "player_language", "") or ""
+        player_language = player_language.strip()
+        if player_language:
+            persona_prompt += (
+                f"\n\n## Output language (system-level, overrides everything above)\n"
+                f"Always write your reply in {player_language}, regardless of the "
+                f"language the user speaks or types in. This applies to the entire "
+                f"reply text. Do not switch languages even if the user uses another "
+                f"language."
+            )
 
         logger.debug("\n === System Prompt ===")
         logger.debug(persona_prompt)

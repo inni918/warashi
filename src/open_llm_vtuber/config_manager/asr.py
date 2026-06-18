@@ -209,11 +209,18 @@ class SherpaOnnxASRConfig(I18nMixin):
     tokens: str = Field(..., alias="tokens")
     num_threads: int = Field(4, alias="num_threads")
     use_itn: bool = Field(True, alias="use_itn")
+    language: Literal["auto", "zh", "en", "ja", "ko", "yue"] = Field(
+        "auto", alias="language"
+    )
     provider: Literal["cpu", "cuda", "rocm"] = Field("cpu", alias="provider")
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "model_type": Description(
             en="Type of ASR model to use", zh="要使用的 ASR 模型类型"
+        ),
+        "language": Description(
+            en="SenseVoice decode-language hint: auto|zh|en|ja|ko|yue (derived from player_language; only applies to the sense_voice model_type)",
+            zh="SenseVoice 辨識語言提示：auto|zh|en|ja|ko|yue（由 player_language 推導；僅對 sense_voice 模型生效）",
         ),
         "encoder": Description(
             en="Path to encoder model (for transducer)",

@@ -61,6 +61,7 @@ class VoiceRecognition(ASRInterface):
         feature_dim: int = 80,  # Feature dimension
         use_itn: bool = True,  # Use ITN for SenseVoice models
         provider: str = "cpu",  # Provider for inference (cpu or cuda)
+        language: str = "auto",  # SenseVoice decode-language hint: auto|zh|en|ja|ko|yue
     ) -> None:
         self.model_type = model_type
         self.encoder = encoder
@@ -90,6 +91,11 @@ class VoiceRecognition(ASRInterface):
         self.SAMPLE_RATE = sample_rate
         self.feature_dim = feature_dim
         self.use_itn = use_itn
+        # SenseVoice decode-language hint, driven by player_language. Clamped to the
+        # set the active sense_voice model actually supports: {auto,zh,en,ja,ko,yue}.
+        # Anything outside that set falls back to 'auto' (best-effort) — sense_voice
+        # physically cannot recognize e.g. French/German regardless of this value.
+        self.language = self._clamp_sense_voice_language(language)
 
         # we need to find a way to get cuda version of sherpa-onnx before we can
         # use the gpu provider.
@@ -107,6 +113,40 @@ class VoiceRecognition(ASRInterface):
         logger.info(f"Sherpa-Onnx-ASR: Using {self.provider} for inference")
 
         self.recognizer = self._create_recognizer()
+
+    @staticmethod
+    def _clamp_sense_voice_language(language: str) -> str:
+        """Map a player_language label/code to a SenseVoice-supported decode hint.
+
+        Valid sense_voice values are exactly {auto, zh, en, ja, ko, yue}. We map the
+        common BCP-47-ish labels onto them; anything outside the set degrades to
+        'auto' (best-effort multilingual) instead of forcing Chinese.
+
+        NOTE: zh-* maps to 'zh' (not 'auto') on purpose — SenseVoice auto-detect
+        mis-fires on short Chinese clips (e.g. 中文 -> "Sainging the."), so keeping
+        the explicit 'zh' lock preserves that robustness for Chinese players.
+        sense_voice only supports zh/en/ja/ko/yue; other languages need a different
+        ASR engine (e.g. faster_whisper).
+        """
+        if not language:
+            return "auto"
+        code = str(language).strip().lower()
+        if not code:
+            return "auto"
+        if code in ("auto", "zh", "en", "ja", "ko", "yue"):
+            return code
+        # zh-HK / yue-* -> Cantonese; other zh-* (zh-TW / zh-CN / zh-Hant ...) -> zh.
+        if code in ("zh-hk",) or code.startswith("yue"):
+            return "yue"
+        if code.startswith("zh"):
+            return "zh"
+        if code.startswith("en"):
+            return "en"
+        if code.startswith("ja"):
+            return "ja"
+        if code.startswith("ko"):
+            return "ko"
+        return "auto"
 
     def _create_recognizer(self):
         if self.model_type == "transducer":
@@ -216,7 +256,7 @@ class VoiceRecognition(ASRInterface):
                 tokens=self.tokens,
                 num_threads=self.num_threads,
                 use_itn=self.use_itn,
-                language="zh",  # 鎖定中文，避免自動偵測把中文誤判成英文（例：講中文被轉成 "Sainging the."）
+                language=self.language,  # driven by player_language; clamped to {auto,zh,en,ja,ko,yue}. zh-* keeps the explicit 'zh' lock (auto-detect mis-fires on short 中文 clips).
                 debug=self.debug,
                 provider=self.provider,
             )

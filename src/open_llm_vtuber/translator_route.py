@@ -574,4 +574,51 @@ def init_translator_route() -> APIRouter:
             }
         )
 
+    @router.get("/api/player-language")
+    async def get_player_language(request: Request):
+        if not _is_local_request(request):
+            return _forbidden()
+        try:
+            data = _load_conf()
+            sysblk = data.get("system_config") or {}
+            lang = sysblk.get("player_language")
+            return JSONResponse({"language": str(lang) if lang is not None else ""})
+        except Exception as e:
+            logger.error(f"player-language read failed: {type(e).__name__}")
+            return JSONResponse(status_code=500, content={"error": "could not read config"})
+
+    @router.post("/api/player-language")
+    async def save_player_language(request: Request):
+        if not _is_local_request(request):
+            return _forbidden()
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse(status_code=400, content={"ok": False, "error": "Invalid JSON body."})
+        if not isinstance(body, dict):
+            return JSONResponse(status_code=400, content={"ok": False, "error": "Invalid JSON body."})
+        lang = body.get("language")
+        lang = str(lang).strip() if lang is not None else ""
+
+        def _write_player_language(value: str) -> None:
+            with open(CONF_PATH, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+            sc_re = re.compile(r"^(\s*)system_config:\s*(#.*)?$")
+            sc_start, sc_indent, sc_end = _find_block_extent(lines, sc_re)
+            if sc_start is None:
+                raise KeyError("system_config: line not found in conf.yaml")
+            if not _rewrite_leaf(lines, sc_start + 1, sc_end, "player_language", value):
+                lines.insert(sc_start + 1, f"{' ' * (sc_indent + 2)}player_language: {_quote_yaml_scalar(value)}\n")
+            _backup_once()
+            _atomic_write(lines)
+
+        try:
+            await asyncio.to_thread(_write_player_language, lang)
+        except Exception as e:
+            logger.error(f"player-language write failed: {type(e).__name__}: {e}")
+            return JSONResponse(status_code=500, content={"ok": False, "error": "Could not write config file."})
+
+        logger.info(f"player-language saved (language={lang!r})")
+        return JSONResponse({"ok": True, "language": lang, "restart_required": True})
+
     return router
