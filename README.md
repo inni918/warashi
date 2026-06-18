@@ -56,7 +56,8 @@ It is a **friendly re-packaging** of the excellent [Open-LLM-VTuber](https://git
 The easy path — **no terminal needed.**
 
 > **Before you start: you'll need an AI "brain" (LLM).**
-> Warashi is the **body and face** — the avatar, the voice, the memory. The **brain** that actually thinks and talks is a separate AI that *you* provide. You pick one of two ways, and you can set it up during the setup wizard (no need to decide everything right now):
+> Warashi is the **body and face** — the avatar, the voice, the memory. The **brain** that actually thinks and talks is a separate AI that *you* provide. You can set it up during the setup wizard (no need to decide everything right now). Here are your options, easiest first:
+> - **(Easiest, recommended) Use Ollama Cloud's free tier** — no API key, no billing, no powerful PC needed. Install the free **[Ollama](https://ollama.com)** app, run `ollama signin` to create a free account (no credit card), and run a capable cloud model like `gpt-oss:20b-cloud`. It runs on Ollama's servers, so your own computer doesn't have to be fast. **$0**, with light-usage limits (see Option C below).
 > - **(A) Use a paid cloud AI** — get an API key from [OpenAI](https://platform.openai.com/api-keys), Claude, or Gemini and paste it in. With a small model this typically costs only **pennies per chat**.
 > - **(B) Run a free local AI** — install the free **[Ollama](https://ollama.com)** app and it runs a brain right on your own computer. **No cost**, but it needs a reasonably capable computer.
 >
@@ -108,9 +109,20 @@ Easiest. In the **first-run setup wizard** (or the **LLM settings tab** later), 
 
 Install [Ollama](https://ollama.com), pull a model (e.g. `ollama pull qwen2.5`), then choose Ollama in the wizard / settings tab. Fully local, no API key, no cloud cost.
 
-### Option C — Cloud models through Ollama (e.g. `gpt-oss:cloud`)
+### Option C — Cloud models through Ollama (recommended easiest, e.g. `gpt-oss:20b-cloud`)
 
-Ollama can also proxy certain **cloud** models. In **Ollama mode you can type the model name by hand**, including cloud names ending in `:cloud` (e.g. `gpt-oss:cloud`).
+**This is the easiest no-API-key path for non-technical users.** Ollama proxies powerful **cloud** models that run on Ollama's servers, so your own computer doesn't need to be fast — and the free tier costs **$0 with no credit card**. Setup:
+
+1. Install Ollama from [ollama.com/download](https://ollama.com/download).
+2. Run **`ollama signin`** in a terminal to create a free account (no card needed).
+3. Run **`ollama pull gpt-oss:20b-cloud`** to fetch the recommended model.
+4. In Warashi's **Ollama mode**, type the model name `gpt-oss:20b-cloud`.
+
+A pulled cloud model is served through the same local Ollama endpoint Warashi already uses (OpenAI-compatible, `localhost:11434`), so Warashi's existing Ollama mode works with it unchanged.
+
+**Recommended model:** `gpt-oss:20b-cloud` — labeled "Low Usage," so it best survives the free limits. Stronger alternatives like `qwen3.5:cloud` or `minimax-m3:cloud` are more capable but use up your limits faster.
+
+> **Honest about the free tier:** it's genuinely **$0, no credit card, just a free account** — but it's a *light-usage* tier. Ollama allows **one cloud model at a time**, with session limits that reset every ~5 hours and weekly limits that reset every 7 days. Ollama does **not** publish exact numbers, so heavy chatting can temporarily hit a limit until it resets. Because inference runs on **Ollama's servers (not your machine)**, don't send anything you'd want kept fully private.
 
 > **Important:** cloud models through Ollama require you to be signed in first — run **`ollama signin`** in a terminal before using them, or the call will fail.
 
@@ -245,7 +257,8 @@ Issues and pull requests are welcome.
 最簡單的路徑，**完全不用終端機。**
 
 > **開始前先準備好：你需要一顆 AI「大腦」（LLM）。**
-> Warashi 是**身體和臉** — 角色外型、聲音、記憶都有了。但真正會思考、會講話的**大腦**，是一個另外的 AI，要由**你**來提供。你二選一就好，而且可以在設定精靈裡再設定（現在不用全部決定）：
+> Warashi 是**身體和臉** — 角色外型、聲音、記憶都有了。但真正會思考、會講話的**大腦**，是一個另外的 AI，要由**你**來提供。可以在設定精靈裡再設定（現在不用全部決定）。以下選項由簡到繁：
+> - **（最簡單、推薦）用 Ollama Cloud 免費方案** — 不用 API key、不用綁信用卡、也不用一台很強的電腦。安裝免費的 **[Ollama](https://ollama.com)** app，執行 `ollama signin` 開一個免費帳號（免綁卡），就能用像 `gpt-oss:20b-cloud` 這種夠力的雲端模型。它跑在 Ollama 的伺服器上，所以你自己的電腦不用很快。**完全免費（$0）**，但有「輕量使用」額度限制（細節見下方方案 C）。
 > - **（A）用付費的雲端 AI** — 去 [OpenAI](https://platform.openai.com/api-keys)、Claude 或 Gemini 拿一把 API key 貼進去。用小模型的話，通常**一次聊天只要幾分錢**。
 > - **（B）跑免費的本地 AI** — 安裝免費的 **[Ollama](https://ollama.com)** app，它就在你自己的電腦上跑一顆大腦。**完全免費**，但需要一台還算夠力的電腦。
 >
@@ -287,7 +300,16 @@ uv run run_server.py     # 啟動伺服器
 
 - **方案 A — 雲端 API key（OpenAI／Claude／Gemini）**：最簡單。在設定精靈（或之後的 LLM 設定分頁）貼上 key，精靈測試通過後寫進 `conf.yaml`。**存檔後重啟啟動器**才會生效。
 - **方案 B — 本地 Ollama**：安裝 [Ollama](https://ollama.com)、拉一個模型（如 `ollama pull qwen2.5`），在精靈選 Ollama。完全本地、不用 key、零雲端費用。
-- **方案 C — 透過 Ollama 用雲端模型（如 `gpt-oss:cloud`）**：Ollama 模式可**手動填模型名**，包含 `:cloud` 結尾的雲端模型。
+- **方案 C — 透過 Ollama 用雲端模型（推薦最簡單，如 `gpt-oss:20b-cloud`）**：**這是非技術使用者最簡單、不用 API key 的路徑。** Ollama 會代理跑在它伺服器上的強力雲端模型，所以你自己的電腦不用很快 —— 而且免費方案**完全 $0、免綁卡**。步驟：
+  1. 從 [ollama.com/download](https://ollama.com/download) 安裝 Ollama。
+  2. 在終端機執行 **`ollama signin`** 開一個免費帳號（免綁卡）。
+  3. 執行 **`ollama pull gpt-oss:20b-cloud`** 拉下推薦模型。
+  4. 在 Warashi 的 **Ollama 模式**填入模型名 `gpt-oss:20b-cloud`。
+
+  拉下來的雲端模型，是透過 Warashi 本來就在用的同一個本地 Ollama 端點（OpenAI 相容、`localhost:11434`）提供服務，所以 Warashi 原本的 Ollama 模式直接就能用。
+
+  **推薦模型：** `gpt-oss:20b-cloud` —— 它標示為「Low Usage」，最能撐住免費額度。更強的替代如 `qwen3.5:cloud` 或 `minimax-m3:cloud` 能力更好，但會更快用掉額度。
+  > **誠實說明免費方案：** 它真的**完全 $0、免綁卡、只要一個免費帳號** —— 但是「輕量使用」等級。Ollama **一次只能跑一個雲端模型**，session 額度每約 5 小時重置一次，每週額度每 7 天重置一次。Ollama **沒有公布確切數字**，所以聊太多可能會暫時碰到額度上限，要等重置。因為運算跑在 **Ollama 的伺服器上（不是你的電腦）**，**不要傳你想完全保密的內容。**
   > **重要：** 用雲端模型前必須先登入，請在終端機執行 **`ollama signin`**，否則呼叫會失敗。
 
 ### ⚠️ 思考型（reasoning）模型不適用
