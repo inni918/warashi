@@ -614,6 +614,19 @@ class ServiceContext:
 
                 alt_config_data = read_yaml(file_path).get("character_config")
 
+                # A character override that sets conf_name but NOT character_name
+                # must show ITS OWN name in chat, not inherit the base
+                # character_name through the merge below. The Character Manager now
+                # always writes character_name, but characters created before that
+                # fix lack it on disk; default it to the override's own conf_name so
+                # they render correctly without rewriting the file.
+                if (
+                    isinstance(alt_config_data, dict)
+                    and alt_config_data.get("conf_name")
+                    and not alt_config_data.get("character_name")
+                ):
+                    alt_config_data["character_name"] = alt_config_data["conf_name"]
+
                 # Start with original config data and perform a deep merge
                 new_character_config_data = deep_merge(
                     self.config.character_config.model_dump(), alt_config_data
