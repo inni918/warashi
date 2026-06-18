@@ -18,13 +18,29 @@
       // Clear any value that doesn't match the current host so URLs follow the current origin.
       try {
         var __curHost = location.host;
-        ['baseUrl','wsUrl','backgroundUrl'].forEach(function(k){
+        // Only baseUrl/wsUrl are host-bound (a remote device must reach the
+        // current origin). backgroundUrl is just an image path under /bg and
+        // should follow the current origin automatically rather than being
+        // wiped on a host-string mismatch (localhost vs 127.0.0.1 vs LAN/Tailscale),
+        // which made a freshly-picked background revert to the default on reload.
+        ['baseUrl','wsUrl'].forEach(function(k){
           var v = localStorage.getItem(k);
           if (v && v.indexOf(__curHost) < 0) {
             localStorage.removeItem(k);
             console.log('[fix] cleared stale ' + k + ' (was for another host): ' + v);
           }
         });
+        // Rebase a stale backgroundUrl onto the current origin instead of deleting it.
+        try {
+          var __bg = localStorage.getItem('backgroundUrl');
+          if (__bg) {
+            var __m = __bg.match(/\/bg\/.*$/);
+            if (__m && __bg.indexOf(__curHost) < 0) {
+              localStorage.setItem('backgroundUrl', JSON.stringify(location.protocol + '//' + __curHost + __m[0].replace(/\"$/, '')));
+              console.log('[fix] rebased backgroundUrl to current host: ' + __m[0]);
+            }
+          }
+        } catch(e){}
         // 對話結束後自動重開麥克風（連續對話，不用每次手動按）。設一次，之後可在設定面板改
         if (!localStorage.getItem('__micAutoSet')) {
           localStorage.setItem('autoStartMicOnConvEnd', 'true');
@@ -73,12 +89,23 @@
       // unless the user has interacted with the page. Click-to-start overlay = one gesture.
       window.__SILENT_WAV='data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSADAAAAAAAA';
       window.__unlockAudio=function(){
+        // Prime a throwaway element (legacy / harmless) ...
         try{ var a=new Audio(window.__SILENT_WAV); a.volume=0; var p=a.play(); if(p&&p.catch)p.catch(function(){}); }catch(e){}
+        // ... AND, crucially, prime the SAME element the app reuses for TTS.
+        // iOS unlock is per-element, so this is what actually enables sound on iPhone.
+        // The app exposes window.__unlockAppAudio (audioManager.unlockPlayback).
+        // The React bundle may load after this tap, so retry briefly until it exists.
+        (function primeAppAudio(tries){
+          try{
+            if(typeof window.__unlockAppAudio==='function'){ window.__unlockAppAudio(window.__SILENT_WAV); return; }
+          }catch(e){}
+          if(tries>0) setTimeout(function(){ primeAppAudio(tries-1); }, 150);
+        })(40);
         var ov=document.getElementById('audio-unlock-overlay');
         if(ov)ov.remove();
         document.removeEventListener('pointerdown',window.__unlockAudio);
         document.removeEventListener('keydown',window.__unlockAudio);
-        console.log('[fix] audio autoplay unlocked');
+        console.log('[fix] audio autoplay unlocked (app element primed)');
       };
       document.addEventListener('pointerdown',window.__unlockAudio);
       document.addEventListener('keydown',window.__unlockAudio);
@@ -110,7 +137,7 @@
         window.__toast('已切換到「'+label+'」（約 1-2 秒生效）');
       };
     </script>
-    <script type="module" crossorigin src="./assets/main-Ccz42GgF.js"></script>
+    <script type="module" crossorigin src="./assets/main-DIvK14AO.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/main-QEkl09-0.css">
   </head>
 
