@@ -587,6 +587,22 @@ def init_translator_route() -> APIRouter:
             logger.error(f"player-language read failed: {type(e).__name__}")
             return JSONResponse(status_code=500, content={"error": "could not read config"})
 
+    @router.get("/api/default-background")
+    async def get_default_background(request: Request):
+        """Server-configured default background (system_config.default_background).
+        The frontend applies it once per browser so the background can be set
+        server-side — works in Safari, where the per-browser picker is unreliable."""
+        if not _is_local_request(request):
+            return _forbidden()
+        try:
+            data = _load_conf()
+            sysblk = data.get("system_config") or {}
+            bg = sysblk.get("default_background")
+            return JSONResponse({"background": str(bg) if bg is not None else ""})
+        except Exception as e:
+            logger.error(f"default-background read failed: {type(e).__name__}")
+            return JSONResponse(status_code=500, content={"error": "could not read config"})
+
     @router.post("/api/player-language")
     async def save_player_language(request: Request):
         if not _is_local_request(request):

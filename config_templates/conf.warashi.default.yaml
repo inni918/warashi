@@ -11,6 +11,7 @@ system_config:
   port: 12393 # 服务器监听的端口
   allow_remote_config: false # 設 true 才允許從遠端(如 Tailscale)改設定(LLM/角色/翻譯)。只在你信任的網路開,因為它讓任何連得到的人都能改、且無密碼
   config_alts_dir: 'characters' # 用于存放替代配置的目录
+  default_background: '' # 預設背景圖檔名(放在 backgrounds/),首次連線套用,如 'future-gadget-lab.jpg';留空＝用內建預設
   tool_prompts: # 要插入到角色提示词中的工具提示词
     live2d_expression_prompt: 'live2d_expression_prompt' # 将追加到系统提示末尾，让 LLM（大型语言模型）包含控制面部表情的关键字。支持的关键字将自动加载到 `[<insert_emomap_keys>]` 的位置。
     # 启用 think_tag_prompt 可让不具备思考输出的 LLM 也能展示内心想法、心理活动和动作（以括号形式呈现），但不会进行语音合成。更多详情请参考 think_tag_prompt。
