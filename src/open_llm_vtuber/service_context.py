@@ -732,8 +732,19 @@ class ServiceContext:
                 )
 
             if new_character_config_data:
+                # Re-read system_config from disk too, so system-level settings the
+                # user changed since server start (esp. player_language) HOT-APPLY on a
+                # character (re-)select instead of staying frozen at the value loaded at
+                # startup. Falls back to the in-memory system_config if the read fails.
+                fresh_system_config = None
+                try:
+                    fresh_system_config = read_yaml("conf.yaml").get("system_config")
+                except Exception as e:
+                    logger.warning(
+                        f"Could not re-read system_config on switch: {type(e).__name__}"
+                    )
                 new_config = {
-                    "system_config": self.system_config.model_dump(),
+                    "system_config": fresh_system_config or self.system_config.model_dump(),
                     "character_config": new_character_config_data,
                 }
                 new_config = validate_config(new_config)
