@@ -38,7 +38,7 @@ It is a **friendly re-packaging** of the excellent [Open-LLM-VTuber](https://git
 - **LLM settings tab** — Ollama mode lets you type a model name by hand, so you can use cloud models too (e.g. `gpt-oss:cloud`).
 - **Performance presets** — Light / Standard / High-performance, bundling ASR/TTS engine choice + memory-consolidation frequency + model keep-alive.
 - **Cross-language translation** — optional subtitle / voice translation (off by default).
-- **Works out of the box** — bundled sample Live2D model + free cloud TTS (edge-tts) + auto-downloaded small ASR model. You only have to plug in an LLM.
+- **Works out of the box** — bundled sample Live2D model + free cloud TTS (edge-tts) + an auto-downloaded speech-to-text model (~1GB; a one-time, several-minute download on the very first launch). You only have to plug in an LLM.
 - **Fully bilingual UI** — Traditional Chinese (zh) and English (en).
 
 ---
@@ -79,7 +79,7 @@ The easy path — **no terminal needed.**
 
 > **Windows SmartScreen (first launch only):** double-clicking may show a blue **"Windows protected your PC"** box. This is normal for an unsigned open-source app. Click **More info** → **Run anyway**. After you allow it once, it won't ask again.
 
-Out of the box it uses the bundled **mao** sample Live2D model and **edge-tts** (free cloud voice, no GPU needed). The first run also downloads a small speech-to-text model automatically.
+Out of the box it uses the bundled **mao** sample Live2D model and **edge-tts** (free cloud voice, no GPU needed). The first run also downloads a speech-to-text model automatically — it's roughly **~1GB**, so the **very first launch does a one-time download + extract that can take several minutes**. The launcher window may look frozen during this — it isn't, so **leave it open and let it finish**; this only happens once.
 
 ### Prefer the terminal? (advanced)
 
@@ -231,7 +231,7 @@ Issues and pull requests are welcome.
 - **LLM 設定分頁**：Ollama 模式可手動填模型名，因此也能用雲端模型（如 `gpt-oss:cloud`）。
 - **效能預設**：輕量／標準／高效能三檔，一鍵搭配好 ASR/TTS 引擎＋記憶整理頻率＋模型常駐。
 - **跨語言翻譯**：可選的字幕／語音翻譯（預設關閉）。
-- **開箱即用**：內建範例 Live2D 模型＋免費雲端語音（edge-tts）＋自動下載的小型語音辨識模型，你只要插上一個 LLM。
+- **開箱即用**：內建範例 Live2D 模型＋免費雲端語音（edge-tts）＋自動下載的語音辨識模型（約 1GB，僅在第一次啟動時下載一次、需數分鐘），你只要插上一個 LLM。
 - **完整中英雙語介面**：繁體中文（zh）與英文（en）。
 
 ## 截圖
@@ -268,7 +268,7 @@ Issues and pull requests are welcome.
 
 > **Windows SmartScreen（僅第一次）：** 雙擊時可能跳出藍色的「**Windows 已保護您的電腦**」視窗。這對未簽章的開源 app 是正常的。請點 **其他資訊** → **仍要執行**。允許一次之後就不會再問了。
 
-開箱使用內建的 **mao** 範例 Live2D 模型與 **edge-tts**（免費雲端語音，不需顯卡）。第一次啟動也會自動下載一個小型語音辨識模型。
+開箱使用內建的 **mao** 範例 Live2D 模型與 **edge-tts**（免費雲端語音，不需顯卡）。第一次啟動也會自動下載一個語音辨識模型 —— 它大約 **1GB**，所以**第一次啟動會做一次性的下載＋解壓，可能要好幾分鐘**。這段期間啟動器視窗看起來像卡住了，其實沒有，**請別關掉、讓它跑完**；這只會發生一次。
 
 ### 習慣用終端機？（進階）
 
