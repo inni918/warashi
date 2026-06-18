@@ -12,6 +12,11 @@ import os
 import httpx
 from loguru import logger
 
+from .utils.path_safety import safe_join
+
+# Base directory every character's core-memory file is confined to.
+CHAT_HISTORY_DIR = "chat_history"
+
 CAP_CHARS = 1500  # 核心記憶上限「預設值」，撞上限 LLM 自行提煉合併
 CAP_MIN = 500     # 可調下限（太小記不住）
 CAP_MAX = 8000    # 可調上限（太大每輪 token 暴增、整理更易遺漏）
@@ -56,7 +61,10 @@ def _clamp_cap(v) -> int:
 
 
 def _path(conf_uid: str) -> str:
-    return os.path.join("chat_history", conf_uid, "core_memory.md")
+    # Confine to chat_history/: ``conf_uid`` is request-controlled, so reject any
+    # value that would escape the base (``..``, absolute, symlink). Legitimate
+    # slugs resolve to chat_history/<conf_uid>/core_memory.md unchanged.
+    return safe_join(CHAT_HISTORY_DIR, conf_uid, "core_memory.md")
 
 
 def load_core_memory(conf_uid: str) -> str:

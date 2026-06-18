@@ -167,8 +167,10 @@ def init_webtool_routes(default_context_cache: ServiceContext) -> APIRouter:
                     / 32768.0
                 )
             except ValueError as e:
+                # Log the underlying numpy detail server-side; do not surface it.
+                logger.error(f"Audio buffer decode error: {e}")
                 raise ValueError(
-                    f"Audio format error: {str(e)}. Please ensure the file is 16-bit PCM WAV format."
+                    "Invalid audio format. Please ensure the file is 16-bit PCM WAV format."
                 )
 
             # Validate audio data
@@ -182,9 +184,13 @@ def init_webtool_routes(default_context_cache: ServiceContext) -> APIRouter:
             return {"text": text}
 
         except ValueError as e:
+            # Log full detail server-side; return a generic message to the client
+            # so no exception text / traceback is exposed over the wire.
             logger.error(f"Audio format error: {e}")
             return Response(
-                content=json.dumps({"error": str(e)}),
+                content=json.dumps(
+                    {"error": "Invalid audio file. Expected 16-bit PCM WAV format."}
+                ),
                 status_code=400,
                 media_type="application/json",
             )

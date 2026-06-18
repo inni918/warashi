@@ -44,6 +44,7 @@ from loguru import logger
 # REUSE the localhost+proxy guard from the LLM wizard router — do not diverge.
 from .llm_config_route import _is_local_request, _forbidden, _make_yaml
 from .config_manager.utils import read_yaml
+from .utils.path_safety import safe_join
 
 
 # --------------------------------------------------------------------------- #
@@ -175,7 +176,13 @@ def _existing_conf_uids(exclude_filename: Optional[str] = None) -> set:
 def _unique_slug(slug: str, taken_uids: set) -> str:
     """Ensure slug doesn't collide with an existing file OR conf_uid; suffix if so."""
     def _conflict(s: str) -> bool:
-        return os.path.exists(os.path.join(CHARACTERS_DIR, f"{s}.yaml")) or s in taken_uids
+        if s in taken_uids:
+            return True
+        # Confine the slug-derived path to characters/ before probing the disk.
+        # An unsafe slug (cannot form a path inside the base) is treated as a
+        # conflict so a different candidate is chosen.
+        safe = _safe_character_path(f"{s}.yaml")
+        return safe is None or os.path.exists(safe)
 
     if not _conflict(slug):
         return slug
@@ -204,12 +211,12 @@ def _safe_character_path(filename: str) -> Optional[str]:
         return None
     if not filename.endswith(".yaml"):
         return None
-    path = os.path.normpath(os.path.join(CHARACTERS_DIR, filename))
-    # normpath could still escape via '..'; verify the prefix.
-    base = os.path.normpath(CHARACTERS_DIR)
-    if not (path == base or path.startswith(base + os.sep)):
+    # Confine to characters/ via the shared realpath barrier. Any value that
+    # would escape (``..``, absolute, symlink) raises and maps to None here.
+    try:
+        return safe_join(CHARACTERS_DIR, filename)
+    except ValueError:
         return None
-    return path
 
 
 def _list_character_files() -> list:

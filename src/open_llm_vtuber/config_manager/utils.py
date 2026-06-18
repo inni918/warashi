@@ -9,6 +9,7 @@ import chardet
 from loguru import logger
 
 from .main import Config
+from ..utils.path_safety import safe_join
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -29,10 +30,15 @@ def read_yaml(config_path: str) -> Dict[str, Any]:
         IOError: If the configuration file cannot be read.
     """
 
-    if not os.path.exists(config_path):
+    # Confine to the project working directory: every legitimate config path
+    # (conf.yaml, characters/*.yaml) is a relative path inside the project root,
+    # so this rejects only traversal/absolute escapes and preserves real configs.
+    safe_path = safe_join(os.getcwd(), config_path)
+
+    if not os.path.exists(safe_path):
         raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
-    content = load_text_file_with_guess_encoding(config_path)
+    content = load_text_file_with_guess_encoding(safe_path)
     if not content:
         raise IOError(f"Failed to read configuration file: {config_path}")
 
@@ -84,17 +90,22 @@ def load_text_file_with_guess_encoding(file_path: str) -> str | None:
     Returns:
     - str: The content of the text file or None if an error occurred.
     """
+    # Defense-in-depth: confine to the project working directory before opening,
+    # so a traversal/absolute path can never escape it. Legitimate config files
+    # are relative paths inside the project root and resolve unchanged.
+    safe_path = safe_join(os.getcwd(), file_path)
+
     encodings = ["utf-8", "utf-8-sig", "gbk", "gb2312", "ascii", "cp936"]
 
     for encoding in encodings:
         try:
-            with open(file_path, "r", encoding=encoding) as file:
+            with open(safe_path, "r", encoding=encoding) as file:
                 return file.read()
         except UnicodeDecodeError:
             continue
     # If common encodings fail, try chardet to guess the encoding
     try:
-        with open(file_path, "rb") as file:
+        with open(safe_path, "rb") as file:
             raw_data = file.read()
         detected = chardet.detect(raw_data)
         if detected["encoding"]:
