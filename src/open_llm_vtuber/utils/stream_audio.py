@@ -9,17 +9,55 @@ from ..agent.output_types import DisplayText
 # pydub shells out to an external ffmpeg to decode/encode audio. Non-technical
 # users (especially on Windows) usually don't have ffmpeg on PATH, so the default
 # edge-tts voice — which produces an mp3 — would fail to convert to wav with
-# "[WinError 2] ... ffmpeg not found" and play NO sound. Bundle a static ffmpeg
-# via imageio-ffmpeg so the default voice works out of the box on all platforms.
-# Falls back silently to whatever ffmpeg is on PATH if the bundle is unavailable.
-try:
-    import imageio_ffmpeg
+# "[WinError 2] ... not found" and play NO sound. We bundle a static ffmpeg via
+# imageio-ffmpeg so the default voice works out of the box on every platform.
+def _setup_bundled_ffmpeg() -> None:
+    """Point pydub at the bundled static ffmpeg (decode/encode)."""
+    try:
+        import imageio_ffmpeg
 
-    _bundled_ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
-    if _bundled_ffmpeg and os.path.exists(_bundled_ffmpeg):
-        AudioSegment.converter = _bundled_ffmpeg
-except Exception as _e:  # pragma: no cover - best-effort, keep startup resilient
-    logger.debug(f"imageio-ffmpeg unavailable, using system ffmpeg: {type(_e).__name__}")
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception as e:  # pragma: no cover - keep startup resilient
+        logger.debug(f"imageio-ffmpeg unavailable, using system ffmpeg: {type(e).__name__}")
+        return
+    if not ffmpeg_exe or not os.path.exists(ffmpeg_exe):
+        return
+    AudioSegment.converter = ffmpeg_exe
+    # Put the ffmpeg folder on PATH too, so a real ffprobe sitting next to it (or
+    # a system one) is still discovered when present.
+    ffmpeg_dir = os.path.dirname(ffmpeg_exe)
+    path_parts = os.environ.get("PATH", "").split(os.pathsep)
+    if ffmpeg_dir and ffmpeg_dir not in path_parts:
+        os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+
+
+def _make_ffprobe_optional() -> None:
+    """imageio-ffmpeg ships ffmpeg but NOT ffprobe. pydub's ``from_file`` probes
+    the input with ``mediainfo_json`` -> ffprobe *before* converting; when ffprobe
+    is missing this raises FileNotFoundError ([WinError 2]) and kills the whole
+    reply with no sound. The probe is only an optimisation (it refines the output
+    codec) — the bundled ffmpeg converts mp3->wav fine without it. So wrap it to
+    degrade gracefully: on any probe failure return {} and let pydub fall back to
+    plain ffmpeg defaults."""
+    try:
+        import pydub.audio_segment as _pas
+
+        _orig_mediainfo_json = _pas.mediainfo_json
+
+        def _safe_mediainfo_json(filepath, read_ahead_limit=-1):
+            try:
+                return _orig_mediainfo_json(filepath, read_ahead_limit=read_ahead_limit)
+            except Exception as e:
+                logger.debug(f"ffprobe unavailable, skipping media probe: {type(e).__name__}")
+                return {}
+
+        _pas.mediainfo_json = _safe_mediainfo_json
+    except Exception as e:  # pragma: no cover - keep startup resilient
+        logger.debug(f"could not patch pydub mediainfo_json: {type(e).__name__}")
+
+
+_setup_bundled_ffmpeg()
+_make_ffprobe_optional()
 
 
 def _get_volume_by_chunks(audio: AudioSegment, chunk_length_ms: int) -> list:
@@ -83,9 +121,10 @@ def prepare_audio_payload(
         }
 
     try:
-        # Pass the format explicitly (derived from the extension) so pydub does
-        # NOT need ffprobe for detection — imageio-ffmpeg ships ffmpeg but not
-        # ffprobe, so format auto-detection would otherwise fail on Windows.
+        # Pass the format explicitly (derived from the extension) so ffmpeg knows
+        # the input container. The optional ffprobe probe is made non-fatal at
+        # import (see _make_ffprobe_optional) so a missing ffprobe no longer
+        # crashes the conversion on Windows.
         _fmt = os.path.splitext(audio_path)[1].lstrip(".").lower() or None
         audio = AudioSegment.from_file(audio_path, format=_fmt)
         audio_bytes = audio.export(format="wav").read()
