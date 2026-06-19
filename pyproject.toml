@@ -41,6 +41,7 @@ dependencies = [
     "letta-client>=0.1.100",
     "duckduckgo-mcp-server>=0.1.1",
     "opencc>=1.1.0",
+    "imageio-ffmpeg>=0.6.0",
 ]
 
 [project.optional-dependencies]

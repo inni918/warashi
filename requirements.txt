@@ -40,6 +40,8 @@ pre-commit==4.5.1
     # via warashi (pyproject.toml)
 pydub==0.25.1
     # via warashi (pyproject.toml)
+imageio-ffmpeg==0.6.0
+    # via warashi (pyproject.toml)
 pysbd==0.3.4
     # via warashi (pyproject.toml)
 pyttsx3==2.99

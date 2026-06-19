@@ -1,8 +1,25 @@
+import os
 import base64
 from pydub import AudioSegment
 from pydub.utils import make_chunks
+from loguru import logger
 from ..agent.output_types import Actions
 from ..agent.output_types import DisplayText
+
+# pydub shells out to an external ffmpeg to decode/encode audio. Non-technical
+# users (especially on Windows) usually don't have ffmpeg on PATH, so the default
+# edge-tts voice — which produces an mp3 — would fail to convert to wav with
+# "[WinError 2] ... ffmpeg not found" and play NO sound. Bundle a static ffmpeg
+# via imageio-ffmpeg so the default voice works out of the box on all platforms.
+# Falls back silently to whatever ffmpeg is on PATH if the bundle is unavailable.
+try:
+    import imageio_ffmpeg
+
+    _bundled_ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    if _bundled_ffmpeg and os.path.exists(_bundled_ffmpeg):
+        AudioSegment.converter = _bundled_ffmpeg
+except Exception as _e:  # pragma: no cover - best-effort, keep startup resilient
+    logger.debug(f"imageio-ffmpeg unavailable, using system ffmpeg: {type(_e).__name__}")
 
 
 def _get_volume_by_chunks(audio: AudioSegment, chunk_length_ms: int) -> list:
@@ -66,7 +83,11 @@ def prepare_audio_payload(
         }
 
     try:
-        audio = AudioSegment.from_file(audio_path)
+        # Pass the format explicitly (derived from the extension) so pydub does
+        # NOT need ffprobe for detection — imageio-ffmpeg ships ffmpeg but not
+        # ffprobe, so format auto-detection would otherwise fail on Windows.
+        _fmt = os.path.splitext(audio_path)[1].lstrip(".").lower() or None
+        audio = AudioSegment.from_file(audio_path, format=_fmt)
         audio_bytes = audio.export(format="wav").read()
     except Exception as e:
         raise ValueError(
