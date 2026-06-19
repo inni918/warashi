@@ -1,7 +1,7 @@
 # System Settings: Setting related to the initialization of the server
 system_config:
   conf_version: 'v1.2.1'
-  host: 'localhost' # use 0.0.0.0 if you want other devices to access this page
+  host: '127.0.0.1' # use 0.0.0.0 to allow access from other devices on the network; '127.0.0.1' is recommended over 'localhost' to avoid IPv6 resolution issues on some systems
   port: 12393
   # New setting for alternative configurations
   config_alts_dir: 'characters'
