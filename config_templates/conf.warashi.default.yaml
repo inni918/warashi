@@ -491,7 +491,7 @@ character_config:
     translator_config:
       # 語音翻譯現在「自動」：語音語言(由 edge_tts.voice 的語系決定)和回覆語言不同時才翻。
       # translate_audio 改為內部 auto-on 旗標(永遠 True / 引擎永遠建好)，是否真的翻由每句決定。
-      translate_audio: True # 內部 auto-on：引擎永遠建好，翻不翻由「語音語言 != 回覆語言」逐句判斷
+      translate_audio: False # 內部 auto-on：引擎永遠建好，翻不翻由「語音語言 != 回覆語言」逐句判斷
       translate_provider: 'deeplx' # 選項：deeplx / llm…。注意：DeepLX 走非官方 DeepL 端點，商用請改官方 DeepL API
       # 字幕翻譯（僅顯示用，不影響記憶/歷史；記憶仍存原始回覆）。預設關閉＝字幕顯示原文。
       translate_subtitle: False # 設 True 並設定 subtitle_target_lang，畫面字幕會翻成該語言

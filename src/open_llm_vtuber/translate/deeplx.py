@@ -98,6 +98,7 @@ class DeepLXTranslate(TranslateInterface):
 
     # translate v2 endpoint from DeepLX
     def translate(self, text: str) -> str:
+        req = None
         try:
             data = {"text": [text], "target_lang": self.target_lang}
             # 用 json= 讓 httpx 自動帶 Content-Type: application/json，否則 DeepLX 回 400
@@ -105,8 +106,17 @@ class DeepLXTranslate(TranslateInterface):
             res = json.loads(req)["translations"]
             res = " ".join([d["text"] for d in res])
         except Exception as e:
-            logger.critical(f"Error translating text '{text}'. Error message: {e}")
-            logger.critical(f"Response: {req}")
-            raise e
+            # Best-effort: if DeepLX is unreachable (not installed/running -> e.g.
+            # WinError 10061 connection refused) or errors, fall back to the
+            # ORIGINAL text instead of raising. A failed translation must never
+            # break the whole reply. (Previously this re-raised AND referenced an
+            # unbound 'req' on failure -> surfaced to the user as
+            # "local variable 'req' referenced before assignment".)
+            logger.warning(
+                f"DeepLX translate failed for '{text[:40]}': {e}. Using original text."
+            )
+            if req is not None:
+                logger.debug(f"DeepLX raw response: {req}")
+            return text
 
         return res
