@@ -665,6 +665,13 @@ class ServiceContext:
                 f"language."
             )
 
+        # 系統層級「玩家描述」指令：注入到所有角色的系統提示，描述玩家是誰、該怎麼稱呼他
+        # （玩家永遠是同一個人）。和 player_language 一樣 system-level、不寫進任何角色人設；
+        # handle_config_switch 會在切換角色時重讀 system_config，所以這裡會 hot-apply。
+        player_prompt = getattr(self.system_config, "player_prompt", "") or ""
+        if player_prompt:
+            persona_prompt += f"\n\n## About the player (applies to all characters)\n{player_prompt}"
+
         logger.debug("\n === System Prompt ===")
         logger.debug(persona_prompt)
 

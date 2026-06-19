@@ -462,6 +462,77 @@ def _write_character_yaml(path: str, character_config: dict) -> None:
     os.replace(tmp_path, path)
 
 
+def _update_base_character_config(
+    *,
+    conf_name: str,
+    persona_prompt: str,
+    live2d_model_name: str,
+    voice: Optional[str],
+    character_name: Optional[str],
+    avatar: Optional[str],
+) -> None:
+    """Surgically update the base conf.yaml's character_config leaves in place.
+
+    Unlike override files, conf.yaml is heavily hand-commented, so we use a ruamel
+    round-trip load (which preserves comments + structure) and set ONLY the specific
+    character_config leaves — never re-dumping unrelated blocks. system_config and all
+    comments are preserved. Atomic temp + os.replace. Mirrors llm_config_route's
+    ruamel usage (_make_yaml round-trip).
+    """
+    from ruamel.yaml.scalarstring import LiteralScalarString
+
+    yaml = _make_yaml()
+    yaml.allow_unicode = True
+    with open(CONF_PATH, "r", encoding="utf-8") as f:
+        data = yaml.load(f)
+
+    if data is None or "character_config" not in data:
+        raise KeyError("character_config block not found in conf.yaml")
+    cc = data["character_config"]
+
+    cc["conf_name"] = conf_name
+    # Multi-line persona stays human-editable as a literal block scalar.
+    if isinstance(persona_prompt, str):
+        cc["persona_prompt"] = LiteralScalarString(
+            persona_prompt if persona_prompt.endswith("\n") else persona_prompt + "\n"
+        )
+    else:
+        cc["persona_prompt"] = persona_prompt
+    cc["live2d_model_name"] = live2d_model_name
+    # Always keep a display name so the chat bubble shows THIS character.
+    cc["character_name"] = character_name or conf_name
+    # avatar: explicit "" clears it (re-inherit/initial); None preserves on-disk value.
+    if avatar is not None:
+        cc["avatar"] = avatar
+    # voice: only touch tts_config.edge_tts.voice when a voice was provided; never
+    # blow away the existing tts_config block otherwise.
+    if voice:
+        tts = cc.get("tts_config")
+        if tts is None:
+            cc["tts_config"] = {"tts_model": "edge_tts", "edge_tts": {"voice": voice}}
+        else:
+            edge = tts.get("edge_tts")
+            if edge is None:
+                tts["edge_tts"] = {"voice": voice}
+            else:
+                edge["voice"] = voice
+
+    # One-time safety backup, consistent with the repo's conf.yaml.bak habit.
+    if not os.path.exists(CONF_PATH + ".bak"):
+        try:
+            import shutil
+
+            shutil.copy2(CONF_PATH, CONF_PATH + ".bak")
+        except Exception as e:
+            logger.warning(f"Could not create conf.yaml.bak: {type(e).__name__}")
+
+    conf_dir = os.path.dirname(os.path.abspath(CONF_PATH)) or "."
+    tmp_path = os.path.join(conf_dir, ".conf.yaml.tmp")
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        yaml.dump(data, f)
+    os.replace(tmp_path, CONF_PATH)
+
+
 # --------------------------------------------------------------------------- #
 # Body parsing (tolerate both spec field names)
 # --------------------------------------------------------------------------- #
@@ -966,8 +1037,84 @@ def init_character_route() -> APIRouter:
     async def update_character(filename: str, request: Request):
         if not _is_local_request(request):
             return _forbidden()
+        # ---- Base character (conf.yaml): surgical ruamel round-trip edit. ----
         if filename == CONF_PATH:
-            return _bad_request("Cannot edit the base character (conf.yaml).")
+            if not os.path.exists(CONF_PATH):
+                return JSONResponse(
+                    status_code=404,
+                    content={"ok": False, "error": "Base character not found."},
+                )
+            try:
+                body = await request.json()
+            except Exception:
+                return _bad_request("Invalid JSON body.")
+            if not isinstance(body, dict):
+                return _bad_request("Invalid JSON body.")
+
+            try:
+                existing = read_yaml(CONF_PATH) or {}
+            except Exception:
+                return JSONResponse(
+                    status_code=500,
+                    content={"ok": False, "error": "Existing file is unreadable."},
+                )
+            existing_cc = existing.get("character_config", {}) or {}
+
+            fields = _extract_body_fields(body)
+            conf_name = fields["conf_name"]
+            persona = fields["persona_prompt"]
+            skin = fields["live2d_model_name"]
+            voice = fields["voice"] or None
+
+            if not conf_name:
+                return _bad_request("Missing display name (conf_name).")
+            if not persona or not str(persona).strip():
+                return _bad_request("Missing persona_prompt.")
+            if not skin:
+                return _bad_request("Missing live2d_model_name (skin).")
+
+            try:
+                await asyncio.to_thread(scan_and_register_skins)
+            except Exception as e:
+                logger.warning(f"pre-update skin scan failed: {type(e).__name__}")
+            registered = {m.get("name") for m in _load_model_dict()}
+            if skin not in registered:
+                return _bad_request(f"Skin '{skin}' is not a registered Live2D model.")
+
+            try:
+                await asyncio.to_thread(
+                    _update_base_character_config,
+                    conf_name=conf_name,
+                    persona_prompt=str(persona),
+                    live2d_model_name=skin,
+                    voice=voice,  # None -> leave existing voice untouched
+                    character_name=fields["character_name"]
+                    if fields["character_name"] is not None
+                    else existing_cc.get("character_name"),
+                    # Avatar: explicit "" clears; absent key (None) preserves on disk.
+                    avatar=fields["avatar"]
+                    if fields["avatar"] is not None
+                    else None,
+                )
+            except Exception as e:
+                logger.error(f"base character update failed: {type(e).__name__}: {e}")
+                return JSONResponse(
+                    status_code=500,
+                    content={"ok": False, "error": "Could not write base character."},
+                )
+
+            logger.info("base character (conf.yaml) updated")
+            return JSONResponse(
+                {
+                    "ok": True,
+                    "filename": CONF_PATH,
+                    "conf_uid": existing_cc.get("conf_uid"),
+                    "conf_name": conf_name,
+                    # Editing the active character only applies after re-select.
+                    "restart_required": False,
+                }
+            )
+
         path = _safe_character_path(filename)
         if path is None:
             return _bad_request("Invalid character filename.")

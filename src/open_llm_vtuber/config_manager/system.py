@@ -14,12 +14,17 @@ class SystemConfig(I18nMixin):
     tool_prompts: Dict[str, str] = Field(..., alias="tool_prompts")
     enable_proxy: bool = Field(False, alias="enable_proxy")
     player_language: str = Field("", alias="player_language")
+    player_prompt: str = Field("", alias="player_prompt")
     default_background: str = Field("", alias="default_background")
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "player_language": Description(
             en="Player/reading language. When set, ALL characters are instructed to always reply in this language regardless of input language (system-level; not written into any persona). Empty = use each persona's own language.",
             zh="玩家/閱讀語言。設定後，所有角色都會被要求一律用此語言回覆（系統層級，不寫進任何角色人設）。留空＝沿用各角色自身語言。",
+        ),
+        "player_prompt": Description(
+            en="Global directive injected into EVERY character's system prompt describing the player and how to address them (the player is always the same person). Empty = none.",
+            zh="注入到每個角色系統提示詞的全域指令，描述玩家是誰、該怎麼稱呼他（玩家永遠是同一個人）。留空＝不注入。",
         ),
         "conf_version": Description(en="Configuration version", zh="配置文件版本"),
         "host": Description(en="Server host address", zh="服务器主机地址"),

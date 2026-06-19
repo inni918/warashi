@@ -637,4 +637,121 @@ def init_translator_route() -> APIRouter:
         logger.info(f"player-language saved (language={lang!r})")
         return JSONResponse({"ok": True, "language": lang, "restart_required": True})
 
+    @router.get("/api/player-prompt")
+    async def get_player_prompt(request: Request):
+        """Global player-context directive (system_config.player_prompt). Injected into
+        EVERY character's system prompt by service_context.construct_system_prompt."""
+        if not _is_local_request(request):
+            return _forbidden()
+        try:
+            data = _load_conf()
+            sysblk = data.get("system_config") or {}
+            prompt = sysblk.get("player_prompt")
+            return JSONResponse({"prompt": str(prompt) if prompt is not None else ""})
+        except Exception as e:
+            logger.error(f"player-prompt read failed: {type(e).__name__}")
+            return JSONResponse(status_code=500, content={"error": "could not read config"})
+
+    @router.post("/api/player-prompt")
+    async def save_player_prompt(request: Request):
+        if not _is_local_request(request):
+            return _forbidden()
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse(status_code=400, content={"ok": False, "error": "Invalid JSON body."})
+        if not isinstance(body, dict):
+            return JSONResponse(status_code=400, content={"ok": False, "error": "Invalid JSON body."})
+        prompt = body.get("prompt")
+        prompt = str(prompt) if prompt is not None else ""
+        # player_prompt is a SHORT single-line directive. Collapse any newlines (and the
+        # surrounding whitespace) to single spaces before writing so it stays a one-line
+        # YAML scalar — avoids multi-line/block-scalar churn in the hand-edited conf.yaml.
+        prompt = re.sub(r"\s*\n\s*", " ", prompt).strip()
+
+        def _write_player_prompt(value: str) -> None:
+            with open(CONF_PATH, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+            sc_re = re.compile(r"^(\s*)system_config:\s*(#.*)?$")
+            sc_start, sc_indent, sc_end = _find_block_extent(lines, sc_re)
+            if sc_start is None:
+                raise KeyError("system_config: line not found in conf.yaml")
+            if not _rewrite_leaf(lines, sc_start + 1, sc_end, "player_prompt", value):
+                lines.insert(sc_start + 1, f"{' ' * (sc_indent + 2)}player_prompt: {_quote_yaml_scalar(value)}\n")
+            _backup_once()
+            _atomic_write(lines)
+
+        try:
+            await asyncio.to_thread(_write_player_prompt, prompt)
+        except Exception as e:
+            logger.error(f"player-prompt write failed: {type(e).__name__}: {e}")
+            return JSONResponse(status_code=500, content={"ok": False, "error": "Could not write config file."})
+
+        logger.info(f"player-prompt saved (len={len(prompt)})")
+        return JSONResponse({"ok": True, "prompt": prompt, "restart_required": True})
+
+    @router.get("/api/agent-config/use-mcpp")
+    async def get_use_mcpp(request: Request):
+        """use_mcpp (MCP Plus = web search / tools) toggle. Nested leaf:
+        character_config.agent_config.agent_settings.basic_memory_agent.use_mcpp.
+        Default False when absent."""
+        if not _is_local_request(request):
+            return _forbidden()
+        try:
+            data = _load_conf()
+            bma = (
+                ((data.get("character_config") or {}).get("agent_config") or {})
+                .get("agent_settings") or {}
+            ).get("basic_memory_agent") or {}
+            return JSONResponse({"use_mcpp": bool(bma.get("use_mcpp", False))})
+        except Exception as e:
+            logger.error(f"use-mcpp read failed: {type(e).__name__}")
+            return JSONResponse(status_code=500, content={"error": "could not read config"})
+
+    @router.post("/api/agent-config/use-mcpp")
+    async def save_use_mcpp(request: Request):
+        if not _is_local_request(request):
+            return _forbidden()
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse(status_code=400, content={"ok": False, "error": "Invalid JSON body."})
+        if not isinstance(body, dict):
+            return JSONResponse(status_code=400, content={"ok": False, "error": "Invalid JSON body."})
+        use_mcpp = bool(body.get("use_mcpp"))
+
+        def _write_use_mcpp(value: bool) -> None:
+            with open(CONF_PATH, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+            # Drill: agent_settings block -> basic_memory_agent block -> use_mcpp bool.
+            as_re = re.compile(r"^(\s*)agent_settings:\s*(#.*)?$")
+            as_start, as_indent, as_end = _find_block_extent(lines, as_re)
+            if as_start is None:
+                raise KeyError("agent_settings: line not found in conf.yaml")
+            bma_re = re.compile(r"^(\s*)basic_memory_agent:\s*(#.*)?$")
+            bma_start, bma_indent, bma_end = _find_block_extent(
+                lines, bma_re, start_from=as_start + 1
+            )
+            if bma_start is None or bma_start >= as_end:
+                raise KeyError(
+                    "basic_memory_agent: line not found inside agent_settings"
+                )
+            # use_mcpp is a YAML bool -> write literal True/False, never quoted.
+            if not _rewrite_bool_leaf(lines, bma_start + 1, bma_end, "use_mcpp", value):
+                lines.insert(
+                    bma_start + 1,
+                    f"{' ' * (bma_indent + 2)}use_mcpp: {'True' if value else 'False'}\n",
+                )
+            _backup_once()
+            _atomic_write(lines)
+
+        try:
+            await asyncio.to_thread(_write_use_mcpp, use_mcpp)
+        except Exception as e:
+            logger.error(f"use-mcpp write failed: {type(e).__name__}: {e}")
+            return JSONResponse(status_code=500, content={"ok": False, "error": "Could not write config file."})
+
+        logger.info(f"use-mcpp saved (use_mcpp={use_mcpp})")
+        return JSONResponse({"ok": True, "use_mcpp": use_mcpp, "restart_required": True})
+
     return router
