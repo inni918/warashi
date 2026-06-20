@@ -59,8 +59,12 @@ from . import memory_core
 # Single source of truth for new bounds / allow-lists
 # --------------------------------------------------------------------------- #
 
-# ASR engines the UI offers (reject anything else before writing). conf.yaml lists
-# more, but this surface is intentionally scoped to these 4.
+# ASR engines the UI accepts. faster_whisper needs an extra `pip install
+# faster-whisper` (+ ctranslate2 / model download) that isn't bundled. We still
+# ACCEPT it here (rather than 400-ing the existing UI, whose preset/dropdown still
+# offer it) because it is now SAFE at runtime: service_context.init_asr falls back
+# to the bundled sherpa_onnx_asr if the chosen engine can't load, so picking
+# faster_whisper without it installed quietly uses sherpa instead of bricking.
 ASR_MODELS = {"sherpa_onnx_asr", "faster_whisper", "groq_whisper_asr", "azure_asr"}
 # TTS engines the UI offers.
 TTS_MODELS = {"edge_tts", "gpt_sovits_tts"}
@@ -92,10 +96,11 @@ PRESETS: dict[str, dict[str, Any]] = {
         "memory_consolidation_interval": 1,
         "keep_alive": 1800,
     },
-    # 高效能：強 GPU 機。ASR 用 faster_whisper（無 GPU 會退回較慢，help 有說明）；
-    # TTS 不自動換 gpt_sovits（需外部服務 + 參考音檔），維持 edge_tts。
+    # 高效能：強機。ASR 維持內建的 sherpa_onnx_asr（離線、零額外相依）——不換成
+    # faster_whisper，因為它的相依沒打包進來、換了一重開就起不來。「高效能」差別在
+    # 記憶體 / FTS / keep_alive 這些旋鈕。TTS 也不自動換 gpt_sovits（需外部服務 + 參考音檔）。
     "high": {
-        "asr_model": "faster_whisper",
+        "asr_model": "sherpa_onnx_asr",
         "tts_model": "edge_tts",
         "core_memory_max_chars": 3000,
         "fts_memory_enabled": True,

@@ -355,12 +355,45 @@ class ServiceContext:
                 if derived != getattr(sherpa_block, "language", "auto"):
                     sherpa_block.language = derived
         if not self.asr_engine or (self.character_config.asr_config != asr_config):
-            logger.info(f"Initializing ASR: {asr_config.asr_model}")
-            self.asr_engine = ASRFactory.get_asr_system(
-                asr_config.asr_model,
-                **getattr(asr_config, asr_config.asr_model).model_dump(),
-            )
-            # saving config should be done after successful initialization
+            requested = asr_config.asr_model
+            logger.info(f"Initializing ASR: {requested}")
+            engine = None
+            try:
+                engine = ASRFactory.get_asr_system(
+                    requested,
+                    **getattr(asr_config, requested).model_dump(),
+                )
+            except Exception as e:
+                # Voice input (the mic) is OPTIONAL. A missing or broken ASR engine
+                # must NOT prevent the whole app from starting — that turns one bad
+                # setting into "the app won't open at all". The usual cause is an
+                # engine whose extra dependency isn't bundled (e.g. selecting
+                # faster_whisper, which needs `pip install faster-whisper`). Fall back
+                # to the bundled, offline sherpa_onnx_asr so voice still works; if even
+                # that fails, disable voice input but keep text chat + voice output.
+                logger.warning(
+                    f"ASR engine '{requested}' failed to load ({type(e).__name__}: {e})."
+                )
+                fallback_block = getattr(asr_config, "sherpa_onnx_asr", None)
+                if requested != "sherpa_onnx_asr" and fallback_block is not None:
+                    try:
+                        engine = ASRFactory.get_asr_system(
+                            "sherpa_onnx_asr", **fallback_block.model_dump()
+                        )
+                        logger.warning(
+                            "Fell back to the bundled 'sherpa_onnx_asr' for voice input."
+                        )
+                    except Exception as e2:
+                        logger.warning(
+                            f"Fallback ASR also failed ({type(e2).__name__}: {e2}). "
+                            "Voice input disabled; text chat and voice output still work."
+                        )
+                else:
+                    logger.warning(
+                        "Voice input disabled; text chat and voice output still work."
+                    )
+            self.asr_engine = engine
+            # saving config should be done after the initialization attempt
             self.character_config.asr_config = asr_config
         else:
             logger.info("ASR already initialized with the same config.")

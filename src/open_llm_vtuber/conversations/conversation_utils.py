@@ -328,6 +328,20 @@ async def process_user_input(
 ) -> str:
     """Process user input, converting audio to text if needed"""
     if isinstance(user_input, np.ndarray):
+        if asr_engine is None:
+            # Voice input is disabled (no speech engine could be loaded). Don't
+            # dereference None — tell the user and let them type instead. Text chat
+            # and voice output keep working.
+            logger.warning("Received audio input but no ASR engine is loaded; ignoring.")
+            await websocket_send(
+                json.dumps(
+                    {
+                        "type": "error",
+                        "message": "Voice input is unavailable (no speech-recognition engine loaded). Please type your message instead.",
+                    }
+                )
+            )
+            return ""
         logger.info("Transcribing audio input...")
         input_text = await asr_engine.async_transcribe_np(user_input)
         await websocket_send(
