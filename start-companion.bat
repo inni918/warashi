@@ -78,14 +78,17 @@ if not exist "conf.yaml" (
   echo.
 )
 
-REM --- 3. Open the browser (delayed so the server can bind) ----------------
-echo   Opening %APP_URL% in your browser...
-start "" /min cmd /c "timeout /t 4 /nobreak >nul & start """" ""%APP_URL%"""
-
-REM --- 4. Start the server -------------------------------------------------
+REM --- 3. Start the server (it opens the browser itself once it's READY) ---
+REM NOTE: we do NOT open the browser here. run_server.py --open-browser waits
+REM until the server is actually listening before opening %APP_URL%, so a slow
+REM first-run startup (speech-model download) never shows a "connection refused"
+REM page. The browser pops up on its own once everything is ready.
 echo ============================================================
 echo   Server starting. Leave THIS WINDOW OPEN while you chat.
-echo   First launch: a small speech model downloads automatically.
+echo   First launch: a small speech model downloads automatically, so the
+echo   browser may take a minute to open by itself - that is normal.
+echo.
+echo   If it does not open on its own, browse to %APP_URL% manually.
 echo.
 echo   On first run a setup wizard appears in the browser - paste an
 echo   API key (OpenAI / Claude / Gemini) OR pick a local Ollama model.
@@ -93,7 +96,7 @@ echo.
 echo   To quit: close this window (or press Control-C).
 echo ============================================================
 echo.
-call uv run run_server.py
+call uv run run_server.py --open-browser
 
 echo.
 echo   Server stopped.
