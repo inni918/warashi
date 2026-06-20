@@ -4,8 +4,10 @@ from loguru import logger
 from .agents.agent_interface import AgentInterface
 from .agents.basic_memory_agent import BasicMemoryAgent
 from .stateless_llm_factory import LLMFactory as StatelessLLMFactory
-from .agents.hume_ai import HumeAIAgent
-from .agents.letta_agent import LettaAgent
+# NOTE: hume_ai / letta_agent are imported LAZILY inside their branches below.
+# Importing them at module top pulls their (optional, possibly unbundled) deps on
+# every startup, so a missing dep would crash the whole app even for users who
+# never pick those agents. Keep the default (basic_memory_agent) path import-clean.
 
 from ..mcpp.tool_manager import ToolManager
 from ..mcpp.tool_executor import ToolExecutor
@@ -108,6 +110,8 @@ class AgentFactory:
             )
 
         elif conversation_agent_choice == "hume_ai_agent":
+            from .agents.hume_ai import HumeAIAgent
+
             settings = agent_settings.get("hume_ai_agent", {})
             return HumeAIAgent(
                 api_key=settings.get("api_key"),
@@ -117,6 +121,8 @@ class AgentFactory:
             )
 
         elif conversation_agent_choice == "letta_agent":
+            from .agents.letta_agent import LettaAgent
+
             settings = agent_settings.get("letta_agent", {})
             return LettaAgent(
                 live2d_model=live2d_model,

@@ -63,6 +63,20 @@ async def process_single_conversation(
         await send_conversation_start_signals(websocket_send)
         logger.info(f"New Conversation Chain {session_emoji} started!")
 
+        # The AI brain can be unset if it failed to initialize (graceful init_agent).
+        # The app still opens so the user can fix it — give a clear notice here rather
+        # than letting a raw NoneType error surface.
+        if context.agent_engine is None:
+            await websocket_send(
+                json.dumps(
+                    {
+                        "type": "error",
+                        "message": "AI brain not set up yet — open Settings to configure your LLM.",
+                    }
+                )
+            )
+            return ""
+
         # Process user input
         input_text = await process_user_input(
             user_input, context.asr_engine, websocket_send

@@ -48,6 +48,11 @@ RECOMMENDED_OLLAMA_MODEL = "qwen2.5:3b"
 
 # Test/validate timeout for the cheap call and the Ollama probe (seconds).
 TEST_CALL_TIMEOUT = 12.0
+# A LOCAL model (Ollama et al.) often does its slow one-time load on the FIRST
+# inference, which can take well over the cloud timeout — using 12s here would
+# dead-end the wizard right after a successful model pull. Give local endpoints a
+# generous cold-start budget instead.
+LOCAL_TEST_CALL_TIMEOUT = 90.0
 OLLAMA_PROBE_TIMEOUT = 4.0
 
 # Provider -> default base_url. The wizard may pass an explicit base_url; if it
@@ -249,11 +254,17 @@ def _test_call_sync(base_url: str, model: str, api_key: str) -> tuple[bool, str]
     """
     from openai import OpenAI
 
+    # Local endpoints (Ollama etc.) get a generous cold-start budget; cloud uses the
+    # short timeout so a wrong URL/key fails fast.
+    _bu = (base_url or "").lower()
+    is_local = any(h in _bu for h in ("127.0.0.1", "localhost", "::1", ":11434"))
+    call_timeout = LOCAL_TEST_CALL_TIMEOUT if is_local else TEST_CALL_TIMEOUT
+
     try:
         client = OpenAI(
             base_url=base_url,
             api_key=api_key,
-            timeout=TEST_CALL_TIMEOUT,
+            timeout=call_timeout,
             max_retries=0,
         )
         client.chat.completions.create(
@@ -288,7 +299,7 @@ def _sanitize_error(exc: Exception, api_key: str) -> str:
     lowered = text.lower()
     if "401" in text or "unauthor" in lowered or "invalid_api_key" in lowered:
         return "Authentication failed — the API key was rejected. Check the key."
-    if "404" in text or "not found" in lowered or "model" in lowered and "exist" in lowered:
+    if "404" in text or "not found" in lowered or ("model" in lowered and "exist" in lowered):
         return "The model was not found at this endpoint. Check the model name."
     if "connect" in lowered or "timeout" in lowered or "refused" in lowered:
         return "Could not reach the endpoint. Check the URL (and that the server is running)."

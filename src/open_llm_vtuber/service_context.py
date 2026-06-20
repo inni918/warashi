@@ -400,12 +400,40 @@ class ServiceContext:
 
     def init_tts(self, tts_config: TTSConfig) -> None:
         if not self.tts_engine or (self.character_config.tts_config != tts_config):
-            logger.info(f"Initializing TTS: {tts_config.tts_model}")
-            self.tts_engine = TTSFactory.get_tts_engine(
-                tts_config.tts_model,
-                **getattr(tts_config, tts_config.tts_model.lower()).model_dump(),
-            )
-            # saving config should be done after successful initialization
+            requested = tts_config.tts_model
+            logger.info(f"Initializing TTS: {requested}")
+            engine = None
+            try:
+                engine = TTSFactory.get_tts_engine(
+                    requested,
+                    **getattr(tts_config, requested.lower()).model_dump(),
+                )
+            except Exception as e:
+                # Voice OUTPUT must not brick the app. If the chosen TTS engine can't
+                # load (missing dependency — e.g. bark/coqui/melo/x_tts — or an
+                # unreachable external server), fall back to the bundled edge_tts so
+                # the character still speaks; if even that fails, disable voice output
+                # but keep text chat working. Never let this reach run()'s sys.exit(1).
+                logger.warning(
+                    f"TTS engine '{requested}' failed to load ({type(e).__name__}: {e})."
+                )
+                fallback_block = getattr(tts_config, "edge_tts", None)
+                if requested.lower() != "edge_tts" and fallback_block is not None:
+                    try:
+                        engine = TTSFactory.get_tts_engine(
+                            "edge_tts", **fallback_block.model_dump()
+                        )
+                        logger.warning(
+                            "Fell back to the bundled 'edge_tts' for voice output."
+                        )
+                    except Exception as e2:
+                        logger.warning(
+                            f"Fallback TTS also failed ({type(e2).__name__}: {e2}). "
+                            "Voice output disabled; text chat still works."
+                        )
+                else:
+                    logger.warning("Voice output disabled; text chat still works.")
+            self.tts_engine = engine
             self.character_config.tts_config = tts_config
         else:
             logger.info("TTS already initialized with the same config.")
@@ -418,11 +446,20 @@ class ServiceContext:
 
         if not self.vad_engine or (self.character_config.vad_config != vad_config):
             logger.info(f"Initializing VAD: {vad_config.vad_model}")
-            self.vad_engine = VADFactory.get_vad_engine(
-                vad_config.vad_model,
-                **getattr(vad_config, vad_config.vad_model.lower()).model_dump(),
-            )
-            # saving config should be done after successful initialization
+            try:
+                self.vad_engine = VADFactory.get_vad_engine(
+                    vad_config.vad_model,
+                    **getattr(vad_config, vad_config.vad_model.lower()).model_dump(),
+                )
+            except Exception as e:
+                # VAD is optional — if it can't load, disable it instead of bricking
+                # the app. (Voice activity detection just won't auto-segment speech.)
+                logger.warning(
+                    f"VAD engine '{vad_config.vad_model}' failed to load "
+                    f"({type(e).__name__}: {e}). Disabling VAD (optional)."
+                )
+                self.vad_engine = None
+            # saving config should be done after the initialization attempt
             self.character_config.vad_config = vad_config
         else:
             logger.info("VAD already initialized with the same config.")
@@ -467,8 +504,15 @@ class ServiceContext:
             self.system_prompt = system_prompt
 
         except Exception as e:
-            logger.error(f"Failed to initialize agent: {e}")
-            raise
+            # The LLM "brain" is core to chatting, but a bad brain config must NOT
+            # stop the app from OPENING — otherwise the user can't reach the settings
+            # UI to fix it. Log clearly and leave the agent unset; the chat path
+            # surfaces a friendly "set up your AI brain in Settings" notice.
+            logger.error(
+                f"Failed to initialize agent ({type(e).__name__}: {e}). The app will "
+                "still open — open Settings to set up your AI brain."
+            )
+            self.agent_engine = None
 
     def init_translate(
         self, translator_config: TranslatorConfig, voice_lang: str | None = None

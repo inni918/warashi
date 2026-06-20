@@ -413,10 +413,13 @@ class WebSocketHandler:
         context = self.client_contexts[client_uid]
         # Update history_uid in service context
         context.history_uid = history_uid
-        context.agent_engine.set_memory_from_history(
-            conf_uid=context.character_config.conf_uid,
-            history_uid=history_uid,
-        )
+        # agent_engine can be None if the AI brain failed to initialize (bad config);
+        # the app still opens so the user can fix it in Settings. Skip memory load.
+        if context.agent_engine is not None:
+            context.agent_engine.set_memory_from_history(
+                conf_uid=context.character_config.conf_uid,
+                history_uid=history_uid,
+            )
 
         messages = [
             msg
@@ -438,10 +441,11 @@ class WebSocketHandler:
         history_uid = create_new_history(context.character_config.conf_uid)
         if history_uid:
             context.history_uid = history_uid
-            context.agent_engine.set_memory_from_history(
-                conf_uid=context.character_config.conf_uid,
-                history_uid=history_uid,
-            )
+            if context.agent_engine is not None:
+                context.agent_engine.set_memory_from_history(
+                    conf_uid=context.character_config.conf_uid,
+                    history_uid=history_uid,
+                )
             await websocket.send_text(
                 json.dumps(
                     {
@@ -492,6 +496,10 @@ class WebSocketHandler:
     ) -> None:
         """Handle incoming raw audio data for VAD processing"""
         context = self.client_contexts[client_uid]
+        # vad_engine can be None if VAD failed to load (graceful init_vad). Raw audio
+        # streams continuously, so silently ignore it rather than erroring per chunk.
+        if context.vad_engine is None:
+            return
         chunk = data.get("audio", [])
         if chunk:
             for audio_bytes in context.vad_engine.detect_speech(chunk):

@@ -18,6 +18,18 @@ title Warashi
 REM Always run from the folder this script lives in (the project root).
 cd /d "%~dp0"
 
+REM Guard: if double-clicked from INSIDE the .zip (Explorer preview), Windows
+REM extracts only this file to a temp folder and the project files are missing.
+if not exist "pyproject.toml" (
+  echo.
+  echo   It looks like you are running this from inside the ZIP file.
+  echo   Please first EXTRACT the zip: right-click it, choose "Extract All...",
+  echo   then open the extracted folder and double-click start-companion.bat there.
+  echo.
+  pause
+  exit /b 1
+)
+
 set "APP_URL=http://localhost:12393"
 
 echo ============================================================
@@ -59,11 +71,24 @@ echo   uv found: %UV_PATH%
 echo.
 
 REM --- 2. Install / update dependencies ------------------------------------
-echo   Installing dependencies (uv sync) - first run can take a few minutes...
+REM Provision the project's pinned Python (.python-version = 3.10). uv manages its
+REM own interpreters, so this works even if the system Python is 3.13+ (which would
+REM otherwise make 'uv sync' fail with 'no interpreter for >=3.10,<3.13').
+echo   Making sure the right Python (3.10) is available...
+call uv python install 3.10
+
+echo.
+echo   Installing dependencies (uv sync)...
+echo   The FIRST run downloads about 2-3 GB and can take 10-40 minutes on a
+echo   normal connection. Leave this window open.
 call uv sync
 if %ERRORLEVEL% neq 0 (
   echo.
-  echo   ERROR: 'uv sync' failed. Scroll up for details.
+  echo   Setup did not finish. The most common cause is an interrupted download.
+  echo   Check your internet connection and just double-click this file again -
+  echo   it resumes from where it left off. If your antivirus blocked it, allow
+  echo   this app and retry, or install uv manually from:
+  echo       https://docs.astral.sh/uv/getting-started/installation/
   echo.
   pause
   exit /b 1

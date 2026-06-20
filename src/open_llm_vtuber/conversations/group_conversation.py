@@ -350,6 +350,18 @@ async def process_member_response(
     """Process group member's response, handling text/audio and tool status events."""
     full_response = ""
 
+    # The AI brain can be unset if it failed to initialize (graceful init_agent).
+    if context.agent_engine is None:
+        await current_ws_send(
+            json.dumps(
+                {
+                    "type": "error",
+                    "message": "AI brain not set up yet — open Settings to configure your LLM.",
+                }
+            )
+        )
+        return ""
+
     try:
         # agent.chat now yields Union[SentenceOutput, Dict[str, Any]]
         agent_output_stream = context.agent_engine.chat(batch_input)

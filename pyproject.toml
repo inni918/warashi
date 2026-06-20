@@ -1,6 +1,6 @@
 [project]
 name = "warashi"
-version = "0.1.6"
+version = "0.1.7"
 description = "Talk to any LLM with hands-free voice interaction, voice interruption, and Live2D taking face running locally across platforms"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"

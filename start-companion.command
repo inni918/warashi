@@ -73,7 +73,16 @@ echo "  uv found: $(command -v uv)"
 echo
 
 # --- 2. Install / update dependencies ------------------------------------
-echo "  Installing dependencies (uv sync) — first run can take a few minutes..."
+# Provision the project's pinned Python (.python-version = 3.10). uv manages its
+# own interpreters, so this works even if the system Python is 3.13+ (which would
+# otherwise make 'uv sync' fail with 'no interpreter for >=3.10,<3.13').
+echo "  Making sure the right Python (3.10) is available..."
+uv python install 3.10 || true
+echo
+echo "  Installing dependencies (uv sync)..."
+echo "  The FIRST run downloads about 2-3 GB and can take 10-40 minutes on a"
+echo "  normal connection. Leave this window open; if it stops, just run this"
+echo "  file again and it resumes from where it left off."
 uv sync
 echo "  Dependencies ready."
 echo
@@ -85,14 +94,16 @@ if [ ! -f conf.yaml ]; then
   echo
 fi
 
-# --- 3. Open the browser (slightly delayed so the server can bind) -------
-echo "  Opening $APP_URL in your browser..."
-( sleep 4; open "$APP_URL" >/dev/null 2>&1 || true ) &
-
-# --- 4. Start the server -------------------------------------------------
+# --- 3. Start the server (it opens the browser itself once it's READY) ---
+# We do NOT open the browser here. run_server.py --open-browser waits until the
+# server is actually listening before opening $APP_URL, so a slow first-run
+# startup (speech-model download) never shows a "connection refused" page.
 echo "============================================================"
 echo "  Server starting. Leave THIS WINDOW OPEN while you chat."
-echo "  First launch: a small speech model downloads automatically."
+echo "  First launch: a small speech model downloads automatically, so the"
+echo "  browser may take a minute to open by itself — that is normal."
+echo
+echo "  If it does not open on its own, browse to $APP_URL manually."
 echo
 echo "  On first run a setup wizard appears in the browser — paste an"
 echo "  API key (OpenAI / Claude / Gemini) OR pick a local Ollama model."
@@ -100,4 +111,4 @@ echo
 echo "  To quit: close this window (or press Control-C)."
 echo "============================================================"
 echo
-uv run run_server.py
+uv run run_server.py --open-browser
