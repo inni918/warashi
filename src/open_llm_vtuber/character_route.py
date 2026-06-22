@@ -77,6 +77,13 @@ AVATAR_MIME_EXT = {
 # for a normal portrait (the frontend already nudges users toward small images).
 AVATAR_MAX_BYTES = 4 * 1024 * 1024  # 4 MB decoded
 
+# Background uploads: image types accepted. Mirrors scan_bg_directory(), which
+# lists .jpg/.jpeg/.png/.gif from backgrounds/, so an upload always shows up in the
+# picker. Backgrounds are full-screen, so allow a larger file than an avatar.
+BG_DIR = "backgrounds"
+BG_ALLOWED_EXTS = {".jpg", ".jpeg", ".png", ".gif"}
+BG_MAX_BYTES = 12 * 1024 * 1024  # 12 MB
+
 # Recursion cap for finding a *.model3.json inside a model folder (depth ~3).
 MODEL3_GLOB_DEPTHS = ("*.model3.json", "*/*.model3.json", "*/*/*.model3.json")
 
@@ -621,6 +628,28 @@ def _write_avatar_atomic(filename: str, raw: bytes) -> None:
     os.replace(tmp_path, dest)
 
 
+def _safe_bg_filename(orig_name: str, ext: str) -> str:
+    """Path-safe background filename: <slug-of-original-or-random>-<hex><ext>.
+
+    Always appends a short random suffix so an upload never overwrites a bundled
+    background or a previous upload of the same name. ``ext`` includes the dot.
+    """
+    base = _slugify(os.path.splitext(orig_name or "")[0])
+    if not base or not SLUG_RE.match(base):
+        base = "bg"
+    return f"{base}-{uuid.uuid4().hex[:6]}{ext}"
+
+
+def _write_bg_atomic(filename: str, raw: bytes) -> None:
+    """Write background bytes into BG_DIR atomically (temp + os.replace)."""
+    os.makedirs(BG_DIR, exist_ok=True)
+    dest = os.path.join(BG_DIR, filename)
+    tmp_path = os.path.join(BG_DIR, "." + filename + ".tmp")
+    with open(tmp_path, "wb") as f:
+        f.write(raw)
+    os.replace(tmp_path, dest)
+
+
 # --------------------------------------------------------------------------- #
 # Network info (for the "open on another device" QR helper)
 # --------------------------------------------------------------------------- #
@@ -1030,6 +1059,56 @@ def init_character_route() -> APIRouter:
             )
 
         logger.info(f"avatar uploaded: {filename} ({len(raw)} bytes)")
+        return JSONResponse({"ok": True, "filename": filename})
+
+    # ------------------------------------------------------------------ #
+    @router.post("/api/background")
+    async def upload_background(request: Request):
+        """Persist an uploaded background image into backgrounds/; return its filename.
+
+        Localhost-only. Expects multipart/form-data with a ``file`` field. The chat
+        UI then serves it from ``/bg/<filename>`` and it shows up in the background
+        picker (scan_bg_directory lists backgrounds/). Server-side persistence — so
+        the background is shared across browsers/devices, like AI avatars — which is
+        why the picker can offer an in-app upload instead of asking users to drop
+        files into a folder by hand.
+        """
+        if not _is_local_request(request):
+            return _forbidden()
+
+        content_type = (request.headers.get("content-type") or "").lower()
+        if not content_type.startswith("multipart/form-data"):
+            return _bad_request("Expected a multipart/form-data upload.")
+        try:
+            form = await request.form()
+        except Exception:
+            return _bad_request("Invalid multipart body.")
+        upload = form.get("file")
+        if upload is None or not hasattr(upload, "read"):
+            return _bad_request("Missing 'file' field.")
+        up_name = getattr(upload, "filename", "") or ""
+        up_ext = os.path.splitext(up_name)[1].lower()
+        if up_ext not in BG_ALLOWED_EXTS:
+            return _bad_request("Unsupported image type (use JPG, PNG, or GIF).")
+        try:
+            raw = await upload.read()
+        except Exception:
+            return _bad_request("Could not read the uploaded file.")
+        if not raw or len(raw) > BG_MAX_BYTES:
+            return _bad_request("Image is empty or too large (max 12 MB).")
+
+        filename = _safe_bg_filename(up_name, up_ext)
+        if os.path.basename(filename) != filename:
+            return _bad_request("Could not derive a safe filename.")
+        try:
+            await asyncio.to_thread(_write_bg_atomic, filename, raw)
+        except Exception as e:
+            logger.error(f"background write failed: {type(e).__name__}")
+            return JSONResponse(
+                status_code=500,
+                content={"ok": False, "error": "Could not save the background."},
+            )
+        logger.info(f"background uploaded: {filename} ({len(raw)} bytes)")
         return JSONResponse({"ok": True, "filename": filename})
 
     # ------------------------------------------------------------------ #
