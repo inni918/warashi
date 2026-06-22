@@ -102,15 +102,54 @@ def _allow_remote_config() -> bool:
         return False
 
 
-def _is_local_request(request: Request) -> bool:
-    """True only if the request originates DIRECTLY from the local machine.
+def _is_tailscale_ip(ip: str) -> bool:
+    """True for an IP in Tailscale's CGNAT range 100.64.0.0/10 (100.64.x–100.127.x)."""
+    if not ip or not ip.startswith("100."):
+        return False
+    try:
+        return 64 <= int(ip.split(".")[1]) <= 127
+    except (ValueError, IndexError):
+        return False
 
-    Requires both a local client.host AND the absence of any proxy/forwarding
-    header — so a reverse proxy or Tailscale Serve in front of a localhost-bound
-    server cannot pass off a remote user as local. The system_config
-    allow_remote_config flag (default false) overrides this for a trusted network.
+
+def _is_tailscale_request(request: Request) -> bool:
+    """True if the request came in over the user's own Tailscale network.
+
+    Two shapes: (1) a DIRECT dial to the server's tailnet IP — the real TCP source
+    (request.client.host) is a 100.64/10 address, which can't be spoofed; (2) via
+    Tailscale Serve, which proxies from localhost but attaches the tailnet user's
+    identity headers and forwards the tailnet client IP. A tailnet device is one of
+    the user's own authenticated machines, so we treat it as trusted for settings —
+    otherwise a phone/tablet on Tailscale can't change anything. This is narrower
+    than allow_remote_config (which trusts ANYONE who can reach the server)."""
+    client = request.client
+    if client is not None and _is_tailscale_ip(client.host):
+        return True
+    # Tailscale Serve injects these for an authenticated tailnet user.
+    if request.headers.get("tailscale-user-login") or request.headers.get(
+        "tailscale-user-name"
+    ):
+        return True
+    # Tailscale Serve forwards the tailnet client IP as the first X-Forwarded-For hop.
+    xff = request.headers.get("x-forwarded-for", "")
+    if xff and _is_tailscale_ip(xff.split(",")[0].strip()):
+        return True
+    return False
+
+
+def _is_local_request(request: Request) -> bool:
+    """True if the request is from a trusted origin allowed to change settings.
+
+    Trusted = the local machine itself, OR a device on the user's own Tailscale
+    network (see _is_tailscale_request), OR when system_config.allow_remote_config
+    is on (default false; trusts anyone who can reach the server). A plain reverse
+    proxy in front of a localhost-bound server is still NOT trusted: a local
+    client.host with proxy/forwarding headers (but no Tailscale signal) is rejected,
+    so it can't pass off a remote user as local.
     """
     if _allow_remote_config():
+        return True
+    if _is_tailscale_request(request):
         return True
     client = request.client
     if client is None or client.host not in LOCAL_HOSTS:
