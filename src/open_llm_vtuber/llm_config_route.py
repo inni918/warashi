@@ -583,9 +583,14 @@ def init_llm_config_route() -> APIRouter:
             return JSONResponse(status_code=400, content={"error": "Missing model name."})
 
         async def stream():
-            # No client timeout: a model pull can take many minutes on a slow link.
+            # The overall pull can take many minutes, so there's no total timeout —
+            # but we DO bound the connect time and detect a STALLED download: Ollama
+            # emits progress frequently, so if no line arrives for a while the link
+            # has dropped. Without this the wizard would hang forever on flaky wifi.
+            connect_timeout = httpx.Timeout(None, connect=15.0)
+            idle_timeout = 120.0  # seconds with zero progress -> treat as stalled
             try:
-                async with httpx.AsyncClient(timeout=None) as client:
+                async with httpx.AsyncClient(timeout=connect_timeout) as client:
                     async with client.stream(
                         "POST",
                         OLLAMA_PULL_URL,
@@ -600,7 +605,22 @@ def init_llm_config_route() -> APIRouter:
                                 }
                             ) + "\n"
                             return
-                        async for line in resp.aiter_lines():
+                        line_iter = resp.aiter_lines().__aiter__()
+                        while True:
+                            try:
+                                line = await asyncio.wait_for(
+                                    line_iter.__anext__(), timeout=idle_timeout
+                                )
+                            except StopAsyncIteration:
+                                break
+                            except asyncio.TimeoutError:
+                                yield json.dumps(
+                                    {
+                                        "status": "error",
+                                        "error": "Download stalled (no progress for a while). Check your connection and try again — it resumes from where it left off.",
+                                    }
+                                ) + "\n"
+                                return
                             if line.strip():
                                 yield line + "\n"
             except Exception as e:

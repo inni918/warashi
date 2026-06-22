@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 import tarfile
 from pathlib import Path
@@ -78,26 +79,55 @@ def download_and_extract(url: str, output_dir: str) -> Path:
         )
         return extracted_dir_path
 
-    # Download the file
+    # Download the file. The speech model is ~1GB and the first launch fetches it
+    # over the open internet, so on flaky home wifi a single attempt often stalls or
+    # drops. Use a connect/read timeout (a stalled stream raises instead of hanging
+    # forever) and retry a few times with backoff, cleaning up any partial file
+    # between attempts. (A total failure here is non-fatal — the app still opens and
+    # just disables voice input — but a retry avoids that for a transient blip.)
     logger.info(f"🏃‍♂️Downloading {url} to {file_path}...")
-    response = requests.get(url, stream=True)
-    response.raise_for_status()  # Raise an error for bad status codes
-    total_size = int(response.headers.get("content-length", 0))
-    logger.debug(f"Total file size: {total_size / 1024 / 1024:.2f} MB")
+    attempts = 3
+    last_err = None
+    for attempt in range(1, attempts + 1):
+        try:
+            # (connect timeout, per-read timeout) — the overall download may still
+            # take many minutes; only a stalled socket trips the 60s read timeout.
+            response = requests.get(url, stream=True, timeout=(15, 60))
+            response.raise_for_status()  # Raise an error for bad status codes
+            total_size = int(response.headers.get("content-length", 0))
+            logger.debug(f"Total file size: {total_size / 1024 / 1024:.2f} MB")
 
-    with (
-        open(file_path, "wb") as f,
-        tqdm(
-            desc=file_name,
-            total=total_size,
-            unit="iB",
-            unit_scale=True,
-            unit_divisor=1024,
-        ) as pbar,
-    ):
-        for chunk in response.iter_content(chunk_size=8192):
-            size = f.write(chunk)
-            pbar.update(size)
+            with (
+                open(file_path, "wb") as f,
+                tqdm(
+                    desc=file_name,
+                    total=total_size,
+                    unit="iB",
+                    unit_scale=True,
+                    unit_divisor=1024,
+                ) as pbar,
+            ):
+                for chunk in response.iter_content(chunk_size=8192):
+                    size = f.write(chunk)
+                    pbar.update(size)
+            last_err = None
+            break
+        except Exception as e:
+            last_err = e
+            logger.warning(
+                f"Download attempt {attempt}/{attempts} for {file_name} failed "
+                f"({type(e).__name__}: {e})."
+            )
+            # Drop the partial file so the retry starts clean.
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except OSError:
+                pass
+            if attempt < attempts:
+                time.sleep(2 * attempt)  # simple linear backoff
+    if last_err is not None:
+        raise last_err
 
     logger.info(f"Downloaded {file_name} successfully.")
 
