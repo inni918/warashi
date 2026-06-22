@@ -96,6 +96,41 @@ The wizard writes your LLM choice into `conf.yaml` for you. You can still edit i
 
 ---
 
+## Starting, stopping, and auto-start
+
+**To start it (open the "host"):**
+
+- **Windows:** double-click **`start-companion.bat`**
+- **macOS:** double-click **`start-companion.command`** — the very first time macOS may block it, so right-click the file → **Open** → **Open**; after that a normal double-click works.
+
+A black command window opens — **that window *is* the server; keep it open while you chat.** Once it's ready it opens the app in your browser by itself (`http://localhost:12393`). Think of it as two parts: the **command window is the engine**, the **browser tab is just the screen**.
+
+> First launch only: it downloads a ~1GB speech model and can take a few minutes — the window may look frozen but isn't. Leave it open and let it finish.
+
+**To stop it:**
+
+- **Close the black command window** (or press **Ctrl + C** inside it). That fully shuts the companion down.
+- Closing the **browser tab** only hides the screen — the server keeps running. Close the command window to actually stop it.
+- If you installed **Ollama** for a local brain, it keeps running quietly in the background. You can leave it (it's light when idle) or quit it from the system-tray (Windows) / menu-bar (macOS) icon.
+
+**To open it again later:** just run the same launcher again — it's also your daily launcher.
+
+**Start it automatically when your computer turns on (optional):**
+
+- **Windows**
+  1. Right-click **`start-companion.bat`** → **Create shortcut**.
+  2. Press **Win + R**, type **`shell:startup`**, press **Enter** — this opens your Startup folder.
+  3. Drag the shortcut into that folder. Warashi now starts at every login. *(To undo: delete the shortcut from that folder.)*
+
+- **macOS**
+  1. Open **System Settings → General → Login Items & Extensions**.
+  2. Under **Open at Login**, click **+** and choose **`start-companion.command`** (or drag the file into the list).
+  *(To undo: select it and click **−**.)*
+
+Either way the command window (and then the browser) pops up on its own at login. Heads-up: a terminal window appearing every boot is normal — that's the engine starting. If you use a local Ollama brain, the Ollama app already auto-starts after you install it, so the whole companion comes up by itself.
+
+---
+
 ## LLM setup (required)
 
 You need **either** an API key for a cloud LLM **or** a running local LLM. A cheap model is plenty for companion chat — you do not need a flagship.
@@ -291,6 +326,39 @@ uv sync                  # 安裝相依套件
 uv run run_server.py     # 啟動伺服器
 # 開 http://localhost:12393  → 設定精靈 → 開聊
 ```
+
+## 開啟、關閉、開機自動啟動
+
+**怎麼開（啟動「主機」）：**
+
+- **Windows：** 雙擊 **`start-companion.bat`**
+- **macOS：** 雙擊 **`start-companion.command`** —— 第一次系統可能會擋，對檔案按右鍵 → **打開** → 再按一次 **打開**；之後正常雙擊就行。
+
+會跳出一個黑色命令視窗 —— **那個視窗就是伺服器，聊天期間要一直開著。** 等它準備好，會自己用瀏覽器打開 app（`http://localhost:12393`）。可以這樣想：**命令視窗是引擎，瀏覽器分頁只是畫面。**
+
+> 僅限第一次啟動：會下載約 1GB 的語音模型、要等幾分鐘，視窗看起來像卡住其實沒有 —— 讓它開著跑完即可。
+
+**怎麼關：**
+
+- **關掉那個黑色命令視窗**（或在裡面按 **Ctrl + C**），角色就完全停止。
+- 只關**瀏覽器分頁**只是隱藏畫面，伺服器還在跑；要真的停掉請關命令視窗。
+- 若你裝了 **Ollama** 跑本地大腦，它會在背景持續執行。閒置時很省，可以不管；想關就從工作列（Windows）／選單列（macOS）的圖示 Quit。
+
+**之後要再開：** 再執行同一個啟動器即可（它也是你的日常啟動器）。
+
+**讓它在電腦開機時自動啟動（選配）：**
+
+- **Windows**
+  1. 對 **`start-companion.bat`** 按右鍵 → **建立捷徑**。
+  2. 按 **Win + R**，輸入 **`shell:startup`**，按 **Enter** —— 會打開「啟動」資料夾。
+  3. 把捷徑拖進那個資料夾。以後每次登入都會自動開啟。*（要取消：把該捷徑從資料夾刪掉。）*
+
+- **macOS**
+  1. 打開 **系統設定 → 一般 → 登入項目與擴充功能**。
+  2. 在 **登入時開啟** 下按 **+**，選 **`start-companion.command`**（或把檔案拖進清單）。
+  *（要取消：選取它後按 **−**。）*
+
+兩種方式都會在登入時自動跳出命令視窗（接著是瀏覽器）。提醒：每次開機會跳出一個終端機視窗是正常的，那就是引擎在啟動。若你用本地 Ollama 大腦，Ollama 裝好後本來就會開機自啟，所以整套會自己起來。
 
 ## LLM 設定（必做）
 
