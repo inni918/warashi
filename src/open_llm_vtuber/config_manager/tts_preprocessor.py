@@ -69,6 +69,28 @@ class LLMTranslateConfig(I18nMixin):
     }
 
 
+class GoogleConfig(I18nMixin):
+    """Configuration for the Google Cloud Translation API (v2)."""
+
+    api_key: str = Field(..., alias="api_key")
+    target_lang: str = Field(..., alias="target_lang")
+    source_lang: Optional[str] = Field(default=None, alias="source_lang")
+
+    DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
+        "api_key": Description(
+            en="Google Cloud Translation API key", zh="Google 雲端翻譯 API 金鑰"
+        ),
+        "target_lang": Description(
+            en="Target language code for Google Translate (e.g. 'ja', 'en')",
+            zh="Google 翻譯的目標語言代碼（如 'ja'、'en'）",
+        ),
+        "source_lang": Description(
+            en="Optional source language code; omit to auto-detect",
+            zh="可選的來源語言代碼；留空則自動偵測",
+        ),
+    }
+
+
 # --- Main TranslatorConfig model ---
 
 
@@ -76,7 +98,7 @@ class TranslatorConfig(I18nMixin):
     """Configuration for translation services."""
 
     translate_audio: bool = Field(..., alias="translate_audio")
-    translate_provider: Literal["deeplx", "tencent", "llm"] = Field(
+    translate_provider: Literal["deeplx", "tencent", "llm", "google"] = Field(
         ..., alias="translate_provider"
     )
     # Display-only subtitle translation. Independent of translate_audio: the AUDIO
@@ -90,6 +112,7 @@ class TranslatorConfig(I18nMixin):
     deeplx: Optional[DeepLXConfig] = Field(None, alias="deeplx")
     tencent: Optional[TencentConfig] = Field(None, alias="tencent")
     llm: Optional[LLMTranslateConfig] = Field(None, alias="llm")
+    google: Optional[GoogleConfig] = Field(None, alias="google")
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "translate_audio": Description(
@@ -113,6 +136,9 @@ class TranslatorConfig(I18nMixin):
         "tencent": Description(
             en="Configuration for TenCent translation service", zh="腾讯 翻译服务配置"
         ),
+        "google": Description(
+            en="Configuration for Google Cloud Translation API", zh="Google 雲端翻譯 API 配置"
+        ),
     }
 
     @model_validator(mode="after")
@@ -132,6 +158,10 @@ class TranslatorConfig(I18nMixin):
             elif translate_provider == "llm" and values.llm is None:
                 raise ValueError(
                     "LLM configuration must be provided when translate_audio is True and translate_provider is 'llm'"
+                )
+            elif translate_provider == "google" and values.google is None:
+                raise ValueError(
+                    "Google configuration must be provided when translate_audio is True and translate_provider is 'google'"
                 )
 
         # Display-only subtitle translation reuses the SAME provider sub-block as the
@@ -153,6 +183,10 @@ class TranslatorConfig(I18nMixin):
             elif translate_provider == "llm" and values.llm is None:
                 raise ValueError(
                     "LLM configuration must be provided when translate_subtitle is True and translate_provider is 'llm'"
+                )
+            elif translate_provider == "google" and values.google is None:
+                raise ValueError(
+                    "Google configuration must be provided when translate_subtitle is True and translate_provider is 'google'"
                 )
 
         return values

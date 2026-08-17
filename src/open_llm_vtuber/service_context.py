@@ -564,7 +564,7 @@ class ServiceContext:
             if mapped is not None:
                 if provider == "deeplx":
                     audio_cfg["deeplx_target_lang"] = mapped
-                else:  # llm / tencent both use 'target_lang'
+                else:  # llm / tencent / google all use 'target_lang'
                     audio_cfg["target_lang"] = mapped
                 logger.info(
                     f"Initializing audio Translator: {provider} -> "
@@ -640,7 +640,7 @@ class ServiceContext:
             from .translate.deeplx import resolve_deepl_target_lang
 
             cfg["deeplx_target_lang"] = resolve_deepl_target_lang(target)
-        else:  # llm / tencent both use 'target_lang'
+        else:  # llm / tencent / google all use 'target_lang'
             cfg["target_lang"] = target
         try:
             return TranslateFactory.get_translator(provider, cfg)
@@ -663,7 +663,7 @@ class ServiceContext:
           translator uses (resolve_deepl_target_lang); a plain code like 'JA' passes
           through unchanged.
         - llm: takes a HUMAN-READABLE label dropped into a Chinese prompt -> 日文/中文/...
-        - tencent: takes a lowercase language code -> ja/zh/en/ko (== V already).
+        - tencent / google: take a lowercase language code -> ja/zh/en/ko (== V already).
         """
         if not voice_lang:
             return None
@@ -678,8 +678,8 @@ class ServiceContext:
             return resolve_deepl_target_lang(v.upper())
         elif provider == "llm":
             return {"ja": "日文", "zh": "中文", "en": "English", "ko": "韓文"}[v]
-        elif provider == "tencent":
-            return v  # tencent uses lowercase codes
+        elif provider in ("tencent", "google"):
+            return v  # tencent/google use lowercase codes
         return None
 
     # ==== utils

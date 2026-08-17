@@ -1,6 +1,7 @@
 from .deeplx import DeepLXTranslate
 from .tencent import TencentTranslate
 from .llm_translate import LLMTranslate
+from .google import GoogleTranslate
 from .translate_interface import TranslateInterface
 
 
@@ -28,6 +29,12 @@ class TranslateFactory:
                 api_endpoint=translate_provider_config.get("api_endpoint"),
                 model=translate_provider_config.get("model"),
                 target_lang=translate_provider_config.get("target_lang"),
+            )
+        elif translate_provider == "google":
+            return GoogleTranslate(
+                api_key=translate_provider_config.get("api_key"),
+                target_lang=translate_provider_config.get("target_lang"),
+                source_lang=translate_provider_config.get("source_lang") or "",
             )
         else:
             raise ValueError(f"Unsupported translate provider: {translate_provider}")

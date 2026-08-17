@@ -473,7 +473,7 @@ character_config:
     translator_config:
       # 比如...你说话并阅读英语字幕，而 TTS 说日语之类的
       translate_audio: False # 警告：请确保翻译引擎配置成功再开启此选项，否则会翻译失败
-      translate_provider: 'deeplx' # 翻译提供商, 目前支持 deeplx 或 tencent
+      translate_provider: 'deeplx' # 翻译提供商, 目前支持 deeplx、tencent、llm 或 google
 
       deeplx:
         deeplx_target_lang: 'JA'
@@ -489,6 +489,13 @@ character_config:
         region: 'ap-guangzhou'
         source_lang: 'zh'
         target_lang: 'ja'
+
+      #  Google 云翻译 API v2，需要一个已启用 "Cloud Translation API" 的密钥
+      #   https://cloud.google.com/translate/docs/setup
+      google:
+        api_key: ''
+        target_lang: 'ja'
+        source_lang: '' # 可选，留空则自动侦测
 
 # 直播平台集成
 live_config:

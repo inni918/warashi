@@ -478,12 +478,12 @@ character_config:
     translator_config:
       # Like... you speak and read the subtitles in English, and the TTS speaks Japanese or that kind of things
       translate_audio: False # Warning: you need to deploy DeeplX to use this. Otherwise it's going to crash
-      translate_provider: 'deeplx' # deeplx or tencent
+      translate_provider: 'deeplx' # deeplx, tencent, llm, or google
 
       deeplx:
         deeplx_target_lang: 'JA'
         deeplx_api_endpoint: 'http://localhost:1188/v2/translate'
-      
+
       #  Tencent Text Translation  5 million characters per month  Remember to turn off post-payment, need to manually go to Machine Translation Console > System Settings to disable
       #   https://cloud.tencent.com/document/product/551/35017
       #   https://console.cloud.tencent.com/cam/capi
@@ -493,6 +493,13 @@ character_config:
         region: 'ap-guangzhou'
         source_lang: 'zh'
         target_lang: 'ja'
+
+      #  Google Cloud Translation API v2. Needs an API key with the
+      #  "Cloud Translation API" enabled: https://cloud.google.com/translate/docs/setup
+      google:
+        api_key: ''
+        target_lang: 'ja'
+        source_lang: '' # optional, leave blank to auto-detect
 
 # Live Streaming Integration
 live_config:
